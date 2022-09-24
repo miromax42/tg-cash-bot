@@ -1,0 +1,11 @@
+version: '3'
+
+env:
+  ENV: test
+
+dotenv: ['.env', '{{.ENV}}.env']
+
+tasks:
+  test:
+    cmds:
+      - echo "Using $TLG_TOKEN"
