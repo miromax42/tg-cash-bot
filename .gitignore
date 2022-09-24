@@ -1,4 +1,11 @@
 test.env
+*.db
+
+# ent
+ent/**
+!ent/entc.go
+!ent/schema/
+!ent/generate.go
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json
