@@ -13,20 +13,25 @@ type Server struct {
 	bot    *tele.Bot
 }
 
-func NewServer(cfg util.ConfigTelegram, log util.Logger) (s *Server) {
+func NewServer(cfg util.ConfigTelegram, log util.Logger) *Server {
 	pref := tele.Settings{
 		Token:  cfg.TelegramToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
-	var err error
-	if s.bot, err = tele.NewBot(pref); err != nil {
+	bot, err := tele.NewBot(pref)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	s.setupRoutes()
+	srv := &Server{
+		logger: log,
+		bot:    bot,
+	}
 
-	return s
+	srv.setupRoutes()
+
+	return srv
 }
 
 func (s *Server) setupRoutes() {

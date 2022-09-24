@@ -9,3 +9,4 @@ tasks:
   test:
     cmds:
       - echo "Using $TLG_TOKEN"
+  run: go run ./...

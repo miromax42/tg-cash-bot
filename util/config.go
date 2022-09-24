@@ -18,8 +18,8 @@ func NewConfig() (cfg *Config, err error) {
 
 	viper.AutomaticEnv()
 
-	err = viper.Unmarshal(cfg)
-	if err != nil {
+	cfg = &Config{}
+	if err = viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("config unmarchal: %w", err)
 	}
 
