@@ -41,6 +41,7 @@ func (s *Server) setupRoutes() {
 	s.bot.Handle("/ping", func(c tele.Context) error {
 		return c.Send("pong!")
 	})
+	s.bot.Handle("/start", s.StartHelp)
 
 	s.bot.Handle("/exp", s.CreateExpense)
 	s.bot.Handle("/all", s.ListExpenses)

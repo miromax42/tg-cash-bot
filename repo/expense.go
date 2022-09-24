@@ -62,6 +62,8 @@ type ListUserExpenseReq struct {
 }
 
 func NewListUserExpenseReq(userID int64, text string) (ListUserExpenseReq, error) {
+	const layout = "2022-01-01"
+
 	tokens := strings.Split(text, " ")
 	if len(tokens) != 2 {
 		return ListUserExpenseReq{}, util.ErrBadFormat
@@ -69,7 +71,18 @@ func NewListUserExpenseReq(userID int64, text string) (ListUserExpenseReq, error
 
 	duration, err := time.ParseDuration(tokens[1])
 	if err != nil {
-		return ListUserExpenseReq{}, err
+		switch tokens[1] {
+		case "day":
+			duration = 24 * time.Hour
+		case "week":
+			duration = 7 * 24 * time.Hour
+		case "month":
+			duration = 30 * 24 * time.Hour
+		case "year":
+			duration = 8760 * time.Hour
+		default:
+			return ListUserExpenseReq{}, util.ErrBadFormat
+		}
 	}
 
 	return ListUserExpenseReq{
