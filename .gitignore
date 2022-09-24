@@ -4,7 +4,7 @@ test.env
 # ent
 ent/**
 !ent/entc.go
-!ent/schema/
+!ent/schema
 !ent/generate.go
 ### VisualStudioCode template
 .vscode/*

@@ -1,8 +1,14 @@
 package main
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
+	_ "github.com/mattn/go-sqlite3"
+
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/database"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
@@ -15,16 +21,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	// if err != nil {
-	// 	log.Fatalf("failed opening connection to sqlite: %v", err)
-	// }
-	// defer client.Close()
-	// // Run the auto migration tool.
-	// if err := client.Schema.Create(context.Background()); err != nil {
-	// 	log.Fatalf("failed creating schema resources: %v", err)
-	// }
+	db, err := ent.Open("sqlite3", "file:test.db?_fk=1")
+	if err != nil {
+		log.Fatal("failed opening connection to sqlite: ", err)
+	}
+	defer db.Close()
 
-	srv := telegram.NewServer(cfg.Telegram, log)
+	if err := db.Schema.Create(context.Background()); err != nil {
+		log.Fatal("failed creating schema resources: ", err)
+	}
+
+	expense := database.NewExpense(db)
+	srv := telegram.NewServer(cfg.Telegram, log, expense)
 	srv.Start()
 }

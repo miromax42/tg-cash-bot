@@ -5,15 +5,17 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 type Server struct {
-	logger util.Logger
-	bot    *tele.Bot
+	logger  util.Logger
+	bot     *tele.Bot
+	expense repo.Expense
 }
 
-func NewServer(cfg util.ConfigTelegram, log util.Logger) *Server {
+func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense) *Server {
 	pref := tele.Settings{
 		Token:  cfg.TelegramToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -25,8 +27,9 @@ func NewServer(cfg util.ConfigTelegram, log util.Logger) *Server {
 	}
 
 	srv := &Server{
-		logger: log,
-		bot:    bot,
+		logger:  log,
+		bot:     bot,
+		expense: expense,
 	}
 
 	srv.setupRoutes()
@@ -38,6 +41,9 @@ func (s *Server) setupRoutes() {
 	s.bot.Handle("/ping", func(c tele.Context) error {
 		return c.Send("pong!")
 	})
+
+	s.bot.Handle("/exp", s.CreateExpense)
+	s.bot.Handle("/all", s.ListExpenses)
 }
 
 func (s *Server) Start() {
