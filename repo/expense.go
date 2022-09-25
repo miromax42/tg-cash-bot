@@ -32,6 +32,13 @@ func NewCreateExpenseReq(userID int64, text string) (CreateExpenseReq, error) {
 	}
 	category := tokens[2]
 
+	if !(0 < amount && amount < 10000) {
+		return CreateExpenseReq{}, util.ErrBadFormat
+	}
+	if !(0 < len(category) && len(category) <= 100) {
+		return CreateExpenseReq{}, util.ErrBadFormat
+	}
+
 	return CreateExpenseReq{
 		UserID:   userID,
 		Amount:   amount,
@@ -62,8 +69,6 @@ type ListUserExpenseReq struct {
 }
 
 func NewListUserExpenseReq(userID int64, text string) (ListUserExpenseReq, error) {
-	const layout = "2022-01-01"
-
 	tokens := strings.Split(text, " ")
 	if len(tokens) != 2 {
 		return ListUserExpenseReq{}, util.ErrBadFormat

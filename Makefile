@@ -9,7 +9,7 @@ PACKAGE=gitlab.ozon.dev/miromaxxs/telegram-bot
 
 all: format build test lint
 
-build: bindir
+build: bindir gen
 	go build -o ${BINDIR}/bot ${PACKAGE}
 
 test:
@@ -17,6 +17,9 @@ test:
 
 run:
 	go run ${PACKAGE}
+
+gen:
+	go generate ./...
 
 generate: install-mockgen
 	${MOCKGEN} -source=internal/model/messages/incoming_msg.go -destination=internal/mocks/messages/messages_mocks.go
