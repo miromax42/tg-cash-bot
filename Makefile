@@ -12,7 +12,7 @@ all: format build test lint
 build: bindir gen
 	go build -o ${BINDIR}/bot ${PACKAGE}
 
-test:
+test: gen
 	go test ./...
 
 run:
