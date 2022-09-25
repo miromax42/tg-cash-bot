@@ -24,7 +24,7 @@ gen:
 generate: install-mockgen
 	${MOCKGEN} -source=internal/model/messages/incoming_msg.go -destination=internal/mocks/messages/messages_mocks.go
 
-lint: install-lint
+lint: gen install-lint
 	${LINTBIN} run
 
 precommit: format build test lint
