@@ -34,5 +34,5 @@ func (e ErrObj) Error() string {
 }
 
 func SendError(c tele.Context, e ErrObj) {
-	c.Send(e.Error())
+	_ = c.Send(e.Error())
 }
