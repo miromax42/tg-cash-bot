@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 type Expense interface {
@@ -18,32 +16,6 @@ type CreateExpenseReq struct {
 	UserID   int64
 	Amount   int
 	Category string
-}
-
-func NewCreateExpenseReq(userID int64, text string) (CreateExpenseReq, error) {
-	tokens := strings.Split(text, " ")
-	if len(tokens) != 3 {
-		return CreateExpenseReq{}, util.ErrBadFormat
-	}
-
-	amount, err := strconv.Atoi(tokens[1])
-	if err != nil {
-		return CreateExpenseReq{}, util.ErrBadFormat
-	}
-	category := tokens[2]
-
-	if !(0 < amount && amount < 10000) {
-		return CreateExpenseReq{}, util.ErrBadFormat
-	}
-	if !(0 < len(category) && len(category) <= 100) {
-		return CreateExpenseReq{}, util.ErrBadFormat
-	}
-
-	return CreateExpenseReq{
-		UserID:   userID,
-		Amount:   amount,
-		Category: category,
-	}, nil
 }
 
 type CreateExpenseResp struct {
@@ -66,34 +38,6 @@ func (r *CreateExpenseResp) String() string {
 type ListUserExpenseReq struct {
 	UserID   int64
 	FromTime time.Time
-}
-
-func NewListUserExpenseReq(userID int64, text string) (ListUserExpenseReq, error) {
-	tokens := strings.Split(text, " ")
-	if len(tokens) != 2 {
-		return ListUserExpenseReq{}, util.ErrBadFormat
-	}
-
-	duration, err := time.ParseDuration(tokens[1])
-	if err != nil {
-		switch tokens[1] {
-		case "day":
-			duration = 24 * time.Hour
-		case "week":
-			duration = 7 * 24 * time.Hour
-		case "month":
-			duration = 30 * 24 * time.Hour
-		case "year":
-			duration = 8760 * time.Hour
-		default:
-			return ListUserExpenseReq{}, util.ErrBadFormat
-		}
-	}
-
-	return ListUserExpenseReq{
-		UserID:   userID,
-		FromTime: time.Now().Add(-duration),
-	}, nil
 }
 
 type ListUserExpenseResp []struct {

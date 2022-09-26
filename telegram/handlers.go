@@ -6,8 +6,8 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/errors"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/parser"
 )
 
 func (s *Server) StartHelp(c tele.Context) error {
@@ -21,7 +21,7 @@ func (s *Server) StartHelp(c tele.Context) error {
 }
 
 func (s *Server) CreateExpense(c tele.Context) error {
-	req, err := repo.NewCreateExpenseReq(c.Sender().ID, c.Text())
+	req, err := parser.NewCreateExpenseReq(c.Sender().ID, c.Text())
 	if err != nil {
 		errors.SendError(c, errors.ErrInvalidCreateExpense)
 		return err
@@ -37,7 +37,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 }
 
 func (s *Server) ListExpenses(c tele.Context) error {
-	req, err := repo.NewListUserExpenseReq(c.Sender().ID, c.Text())
+	req, err := parser.NewListUserExpenseReq(c.Sender().ID, c.Text())
 	if err != nil {
 		errors.SendError(c, errors.ErrInvalidListExpense)
 		return err
