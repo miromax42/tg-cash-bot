@@ -22,7 +22,7 @@ func (e Expense) CreateExpense(
 	ctx context.Context,
 	req repo.CreateExpenseReq,
 ) (*repo.CreateExpenseResp, error) {
-	expense, err := e.db.Expense.Create().
+	model, err := e.db.Expense.Create().
 		SetAmount(req.Amount).
 		SetCreatedBy(req.UserID).
 		SetCategory(req.Category).
@@ -32,9 +32,9 @@ func (e Expense) CreateExpense(
 	}
 
 	return &repo.CreateExpenseResp{
-		Amount:    expense.Amount,
-		Category:  expense.Category,
-		CreatedAt: expense.CreatedAt,
+		Amount:    model.Amount,
+		Category:  model.Category,
+		CreatedAt: model.CreatedAt,
 	}, nil
 }
 
