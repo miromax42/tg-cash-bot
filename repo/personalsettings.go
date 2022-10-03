@@ -7,7 +7,7 @@ import (
 )
 
 type PersonalSettings interface {
-	Get(ctx context.Context, id int64) (*PersonalSettingsResp, error)
+	Get(ctx context.Context, userID int64) (*PersonalSettingsResp, error)
 	Set(ctx context.Context, req PersonalSettingsReq) error
 }
 
