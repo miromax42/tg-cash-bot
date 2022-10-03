@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 
@@ -25,7 +26,11 @@ func (PersonalSettings) Fields() []ent.Field {
 		field.Int64("id").
 			Immutable(),
 		field.Enum("currency").
-			GoType(currency.Token(0)),
+			Optional().
+			GoType(currency.Token(0)).
+			Annotations(&entsql.Annotation{
+				Default: currency.TokenRUB.String(),
+			}),
 	}
 }
 

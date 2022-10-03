@@ -23,10 +23,6 @@ var Supported = [...]string{
 	"USD",
 }
 
-func (t Token) String() string {
-	return Supported[t]
-}
-
 func Parse(cur string) (Token, error) {
 	for i, v := range Supported {
 		if v == cur {
@@ -46,16 +42,18 @@ func MustParse(cur string) Token {
 	return t
 }
 
+func (t Token) String() string {
+	return Supported[t]
+}
+
 func (Token) Values() (kinds []string) {
 	return Supported[:]
 }
 
-// Value provides the DB a string from int.
 func (t Token) Value() (driver.Value, error) {
 	return t.String(), nil
 }
 
-// Scan tells our code how to read the enum into our type.
 func (t *Token) Scan(val any) error {
 	var s string
 	switch v := val.(type) {
