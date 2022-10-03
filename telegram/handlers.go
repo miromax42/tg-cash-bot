@@ -21,7 +21,7 @@ func (s *Server) StartHelp(c tele.Context) error {
 }
 
 func (s *Server) CreateExpense(c tele.Context) error {
-	req, err := parser.NewCreateExpenseReq(c.Sender().ID, c.Text())
+	req, err := parser.NewCreateExpenseReq(c)
 	if err != nil {
 		errors.SendError(c, errors.ErrInvalidCreateExpense)
 		return err
@@ -37,7 +37,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 }
 
 func (s *Server) ListExpenses(c tele.Context) error {
-	req, err := parser.NewListUserExpenseReq(c.Sender().ID, c.Text())
+	req, err := parser.NewListUserExpenseReq(c)
 	if err != nil {
 		errors.SendError(c, errors.ErrInvalidListExpense)
 		return err
@@ -50,4 +50,27 @@ func (s *Server) ListExpenses(c tele.Context) error {
 	}
 
 	return c.Send(resp.String())
+}
+
+func (s *Server) SelectCurrency(c tele.Context) error {
+	return c.Send("Chose currency:", currencySelectorUI)
+}
+
+func (s *Server) SetCurrency(c tele.Context) error {
+	defer func() {
+		_ = c.Respond()
+	}()
+
+	req, err := parser.NewPersonalSettingsReq(c)
+	if err != nil {
+		errors.SendError(c, errors.ErrInternal)
+		return err
+	}
+
+	if err := s.userSettings.Set(context.TODO(), req); err != nil {
+		errors.SendError(c, errors.ErrInternal)
+		return err
+	}
+
+	return c.Send("currency set to " + c.Data())
 }

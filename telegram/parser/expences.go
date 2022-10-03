@@ -2,24 +2,24 @@ package parser
 
 import (
 	"strconv"
-	"strings"
 	"time"
+
+	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
-func NewCreateExpenseReq(userID int64, text string) (repo.CreateExpenseReq, error) {
-	tokens := strings.Split(text, " ")
-	if len(tokens) != 3 {
+func NewCreateExpenseReq(c tele.Context) (repo.CreateExpenseReq, error) {
+	if len(c.Args()) != 2 {
 		return repo.CreateExpenseReq{}, util.ErrBadFormat
 	}
 
-	amount, err := strconv.Atoi(tokens[1])
+	amount, err := strconv.Atoi(c.Args()[0])
 	if err != nil {
 		return repo.CreateExpenseReq{}, util.ErrBadFormat
 	}
-	category := tokens[2]
+	category := c.Args()[1]
 
 	if !(0 < amount && amount < 10000) {
 		return repo.CreateExpenseReq{}, util.ErrBadFormat
@@ -29,21 +29,22 @@ func NewCreateExpenseReq(userID int64, text string) (repo.CreateExpenseReq, erro
 	}
 
 	return repo.CreateExpenseReq{
-		UserID:   userID,
+		UserID:   c.Sender().ID,
 		Amount:   amount,
 		Category: category,
 	}, nil
 }
 
-func NewListUserExpenseReq(userID int64, text string) (repo.ListUserExpenseReq, error) {
-	tokens := strings.Split(text, " ")
-	if len(tokens) != 2 {
+func NewListUserExpenseReq(c tele.Context) (repo.ListUserExpenseReq, error) {
+	if len(c.Args()) != 1 {
 		return repo.ListUserExpenseReq{}, util.ErrBadFormat
 	}
 
-	duration, err := time.ParseDuration(tokens[1])
+	durationToken := c.Args()[0]
+
+	duration, err := time.ParseDuration(durationToken)
 	if err != nil {
-		switch tokens[1] {
+		switch durationToken {
 		case "day":
 			duration = 24 * time.Hour
 		case "week":
@@ -58,7 +59,7 @@ func NewListUserExpenseReq(userID int64, text string) (repo.ListUserExpenseReq, 
 	}
 
 	return repo.ListUserExpenseReq{
-		UserID:   userID,
+		UserID:   c.Sender().ID,
 		FromTime: time.Now().Add(-duration),
 	}, nil
 }

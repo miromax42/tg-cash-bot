@@ -101,6 +101,16 @@ func (s *ExchangeSuite) TestConverter_Convert() {
 			testCount,
 			false,
 		},
+		{
+			"unknown to usd",
+			currency.ConvertReq{
+				Amount: testCount,
+				From:   currency.Token(1377),
+				To:     currency.TokenUSD,
+			},
+			0,
+			true,
+		},
 	}
 
 	for _, tt := range tests {

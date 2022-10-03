@@ -30,6 +30,12 @@ func New(cfg util.ConfigExchange) (*Converter, error) {
 }
 
 func (c *Converter) Convert(_ context.Context, req currency.ConvertReq) (amount float64, err error) {
+	_, ok1 := c.data[req.To]
+	_, ok2 := c.data[req.From]
+	if !ok1 || !ok2 {
+		return 0, util.ErrUnsupported
+	}
+
 	coefficient := c.getCoefficient(req.From, req.To)
 	if err != nil {
 		return 0, err

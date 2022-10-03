@@ -11,12 +11,13 @@ import (
 )
 
 type Server struct {
-	logger  util.Logger
-	bot     *tele.Bot
-	expense repo.Expense
+	logger       util.Logger
+	bot          *tele.Bot
+	expense      repo.Expense
+	userSettings repo.PersonalSettings
 }
 
-func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense) *Server {
+func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense, userSettings repo.PersonalSettings) *Server {
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -28,9 +29,10 @@ func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense) *
 	}
 
 	srv := &Server{
-		logger:  log,
-		bot:     bot,
-		expense: expense,
+		logger:       log,
+		bot:          bot,
+		expense:      expense,
+		userSettings: userSettings,
 	}
 
 	srv.setupRoutes()
@@ -48,6 +50,11 @@ func (s *Server) setupRoutes() {
 
 	s.bot.Handle("/exp", s.CreateExpense)
 	s.bot.Handle("/all", s.ListExpenses)
+
+	s.bot.Handle("/currency", s.SelectCurrency)
+	for _, b := range currencyButtonsUI {
+		s.bot.Handle(&b, s.SetCurrency)
+	}
 }
 
 func (s *Server) Start() {

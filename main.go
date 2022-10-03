@@ -32,6 +32,9 @@ func main() {
 	}
 
 	expense := database.NewExpense(db)
-	srv := telegram.NewServer(cfg.Telegram, log, expense)
+	personalSettings := database.NewPersonalSettings(db)
+	srv := telegram.NewServer(cfg.Telegram, log, expense, personalSettings)
+
+	log.Info("Started")
 	srv.Start()
 }
