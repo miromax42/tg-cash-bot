@@ -6,6 +6,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
@@ -15,9 +16,16 @@ type Server struct {
 	bot          *tele.Bot
 	expense      repo.Expense
 	userSettings repo.PersonalSettings
+	exchange     currency.Exchange
 }
 
-func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense, userSettings repo.PersonalSettings) *Server {
+func NewServer(
+	cfg util.ConfigTelegram,
+	log util.Logger,
+	expense repo.Expense,
+	userSettings repo.PersonalSettings,
+	exchange currency.Exchange,
+) *Server {
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -33,6 +41,7 @@ func NewServer(cfg util.ConfigTelegram, log util.Logger, expense repo.Expense, u
 		bot:          bot,
 		expense:      expense,
 		userSettings: userSettings,
+		exchange:     exchange,
 	}
 
 	srv.setupRoutes()

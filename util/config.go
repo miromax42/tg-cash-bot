@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Telegram     ConfigTelegram `mapstructure:",squash"`
-	OpenExchange ConfigExchange `mapstructure:",squash"`
+	Telegram ConfigTelegram `mapstructure:",squash"`
+	Exchange ConfigExchange `mapstructure:",squash"`
 }
 
 type ConfigTelegram struct {

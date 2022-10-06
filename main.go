@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/exhange"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/database"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram"
@@ -31,9 +32,13 @@ func main() {
 		log.Fatal("failed creating schema resources: ", err)
 	}
 
+	converter, err := exhange.New(cfg.Exchange)
+	if err != nil {
+		log.Fatal("failed opening connection to sqlite: ", err)
+	}
 	expense := database.NewExpense(db)
 	personalSettings := database.NewPersonalSettings(db)
-	srv := telegram.NewServer(cfg.Telegram, log, expense, personalSettings)
+	srv := telegram.NewServer(cfg.Telegram, log, expense, personalSettings, converter)
 
 	log.Info("Started")
 	srv.Start()

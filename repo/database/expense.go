@@ -42,7 +42,7 @@ func (e Expense) ListUserExpense(ctx context.Context, req repo.ListUserExpenseRe
 	var expenses repo.ListUserExpenseResp
 	if err := e.db.Expense.Query().
 		Where(expense.CreatedBy(req.UserID)).
-		Where(expense.CreateTime(req.FromTime)).
+		Where(expense.CreateTimeGTE(req.FromTime)).
 		GroupBy(expense.FieldCategory).
 		Aggregate(ent.Sum(expense.FieldAmount)).
 		Scan(ctx, &expenses); err != nil {

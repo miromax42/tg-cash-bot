@@ -21,6 +21,8 @@
 
 ## Конфигурация
 * `TLG_TOKEN` - токен телеграм бота
+* `EXCHANGE_TOKEN`- токен для [сервиса получения курсов валют](https://apilayer.com/marketplace/fixer-api)
+* `EXCHANGE_BASE_CURRENCY` - код дефолтной валюты (USD, CNY, EUR, RUB)
 
 ## Выбор библиотек
 * `telebot` - мне как бекенд разработчику, гораздо комфортнее с httpServer-подобной семантикой  

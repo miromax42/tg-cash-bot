@@ -29,6 +29,10 @@ func New(cfg util.ConfigExchange) (*Converter, error) {
 	}, nil
 }
 
+func (c *Converter) Base() currency.Token {
+	return c.baseCurrency
+}
+
 func (c *Converter) Convert(_ context.Context, req currency.ConvertReq) (amount float64, err error) {
 	_, ok1 := c.data[req.To]
 	_, ok2 := c.data[req.From]
