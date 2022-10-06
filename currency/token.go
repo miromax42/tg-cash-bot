@@ -10,7 +10,7 @@ import (
 type Token int
 
 const (
-	TokenRUB Token = iota
+	TokenRUB Token = iota // default on empty field
 	TokenCNY
 	TokenEUR
 	TokenUSD

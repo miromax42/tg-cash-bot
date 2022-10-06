@@ -17,8 +17,8 @@ type Converter struct {
 	data         map[currency.Token]float64
 }
 
-func New(cfg util.ConfigExchange) (*Converter, error) {
-	data, err := getValues(cfg)
+func New(ctx context.Context, cfg util.ConfigExchange) (*Converter, error) {
+	data, err := getValues(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *Converter) getCoefficient(from currency.Token, to currency.Token) float
 	return coefficient
 }
 
-func getValues(cfg util.ConfigExchange) (map[currency.Token]float64, error) {
+func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token]float64, error) {
 	response := struct {
 		Quotes    map[string]float64 `json:"quotes"`
 		Source    string             `json:"source"`
@@ -78,7 +78,7 @@ func getValues(cfg util.ConfigExchange) (map[currency.Token]float64, error) {
 		cfg.BaseCurrency, strings.Join(currency.Supported[:], "%2C"))
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	req.Header.Set("apikey", cfg.Token)
 	if err != nil {
 		return nil, err

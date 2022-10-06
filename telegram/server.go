@@ -24,7 +24,7 @@ func NewServer(
 	expense repo.Expense,
 	userSettings repo.PersonalSettings,
 	exchange currency.Exchange,
-) *Server {
+) (*Server, error) {
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -32,7 +32,7 @@ func NewServer(
 
 	bot, err := tele.NewBot(pref)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	srv := &Server{
@@ -45,7 +45,7 @@ func NewServer(
 
 	srv.setupRoutes()
 
-	return srv
+	return srv, nil
 }
 
 func (s *Server) setupRoutes() {
@@ -67,4 +67,10 @@ func (s *Server) setupRoutes() {
 
 func (s *Server) Start() {
 	s.bot.Start()
+}
+
+func (s *Server) Stop() {
+	if s != nil && s.bot != nil {
+		s.bot.Stop()
+	}
 }

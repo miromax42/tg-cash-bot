@@ -19,7 +19,7 @@ type ExchangeSuite struct {
 func (s *ExchangeSuite) SetupSuite() {
 	cfg, err := util.NewConfig()
 
-	s.c, err = New(cfg.Exchange)
+	s.c, err = New(context.Background(), cfg.Exchange)
 	require.NoError(s.T(), err)
 }
 
