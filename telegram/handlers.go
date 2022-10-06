@@ -42,6 +42,10 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
 	})
+	if err != nil {
+		errors.SendError(c, errors.ErrInternal)
+		return err
+	}
 
 	databaseReq := repo.CreateExpenseReq{
 		UserID:   req.UserID,

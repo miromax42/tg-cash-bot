@@ -101,7 +101,7 @@ func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token
 	if err != nil {
 		return nil, err
 	}
-	if response.Success != true {
+	if !response.Success {
 		return nil, util.ErrBadResponse
 	}
 
