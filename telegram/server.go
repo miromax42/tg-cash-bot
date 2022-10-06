@@ -4,7 +4,6 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v3"
-	"gopkg.in/telebot.v3/middleware"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -50,7 +49,7 @@ func NewServer(
 }
 
 func (s *Server) setupRoutes() {
-	s.bot.Use(middleware.Logger())
+	s.bot.Use(s.Authentication)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {
 		return c.Send("pong!")

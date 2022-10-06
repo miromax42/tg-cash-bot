@@ -37,15 +37,9 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		return err
 	}
 
-	settings, err := s.userSettings.Get(context.TODO(), req.UserID)
-	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
-	}
-
 	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
 		Amount: req.Amount,
-		From:   settings.Currency,
+		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
 	})
 
@@ -76,12 +70,6 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return err
 	}
 
-	settings, err := s.userSettings.Get(context.TODO(), req.UserID)
-	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
-	}
-
 	databaseReq := repo.ListUserExpenseReq{
 		UserID:   req.UserID,
 		FromTime: req.FromTime,
@@ -96,7 +84,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 	multiplier, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
 		Amount: oneCoin,
 		From:   s.exchange.Base(),
-		To:     settings.Currency,
+		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 	})
 	if err != nil {
 		errors.SendError(c, errors.ErrInternal)
