@@ -13,7 +13,7 @@ build: bindir gen
 	go build -o ${BINDIR}/bot ${PACKAGE}
 
 test: gen
-	go test ./...
+	go test -cover ./...
 
 run:
 	go run ${PACKAGE}
