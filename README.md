@@ -1,5 +1,7 @@
 # Telegram bot (ДЗ1) 
 
+[![pipeline status](https://gitlab.ozon.dev/miromaxxs/telegram-bot/badges/master/pipeline.svg)](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/commits/master) [![coverage report](https://gitlab.ozon.dev/miromaxxs/telegram-bot/badges/master/coverage.svg)](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/commits/master)
+
 [[_TOC_]]
 
 ## ТЗ
