@@ -98,8 +98,10 @@ func (s *Server) ListExpenses(c tele.Context) error {
 	return c.Send(ListExpensesAnswer(resp, multiplier))
 }
 
-func (s *Server) SelectCurrency(c tele.Context) error {
-	return c.Send("Chose currency:", currencySelectorUI)
+func (s *Server) SelectCurrency(reply *tele.ReplyMarkup) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		return c.Send("Chose currency:", reply)
+	}
 }
 
 func (s *Server) SetCurrency(c tele.Context) error {

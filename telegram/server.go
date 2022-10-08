@@ -59,10 +59,9 @@ func (s *Server) setupRoutes() {
 	s.bot.Handle("/exp", s.CreateExpense)
 	s.bot.Handle("/all", s.ListExpenses)
 
-	s.bot.Handle("/currency", s.SelectCurrency)
-	for _, b := range currencyButtonsUI {
-		s.bot.Handle(&b, s.SetCurrency)
-	}
+	currencySelectorUI, anyButtonUI := getCurrencySelector()
+	s.bot.Handle("/currency", s.SelectCurrency(currencySelectorUI))
+	s.bot.Handle(anyButtonUI, s.SetCurrency)
 }
 
 func (s *Server) Start() {

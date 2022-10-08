@@ -6,26 +6,21 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 )
 
-var (
-	currencySelectorUI, currencyButtonsUI = getCurrencySelector()
-)
-
-func getCurrencySelector() (*tele.ReplyMarkup, []tele.Btn) {
+func getCurrencySelector() (*tele.ReplyMarkup, *tele.Btn) {
 	currencySelector := &tele.ReplyMarkup{ResizeKeyboard: true}
-
 	rows := make([]tele.Row, len(currency.Supported))
-	buttons := make([]tele.Btn, len(currency.Supported))
 
+	var button tele.Btn
 	for i := range currency.Supported {
-		buttons[i] = currencySelector.Data(
+		button = currencySelector.Data(
 			currency.Token(i).String(),
 			"set-currency",
 			currency.Token(i).String(),
 		)
-		rows[i] = currencySelector.Row(buttons[i])
+		rows[i] = currencySelector.Row(button)
 	}
 
 	currencySelector.Inline(rows...)
 
-	return currencySelector, buttons
+	return currencySelector, &button
 }
