@@ -67,7 +67,7 @@ func (s *PersonalSettingsSuite) TestGet() {
 		{
 			"default",
 			idNotExists,
-			repo.DefaultPersonalSettingsReq(),
+			repo.DefaultPersonalSettingsResp(),
 			false,
 		},
 		{

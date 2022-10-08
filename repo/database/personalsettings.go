@@ -21,8 +21,9 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 	settings, err := p.db.PersonalSettings.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return repo.DefaultPersonalSettingsReq(), nil
+			return repo.DefaultPersonalSettingsResp(), nil
 		}
+
 		return nil, err
 	}
 

@@ -20,7 +20,7 @@ type PersonalSettingsReq struct {
 	Currency *currency.Token
 }
 
-func DefaultPersonalSettingsReq() *PersonalSettingsResp {
+func DefaultPersonalSettingsResp() *PersonalSettingsResp {
 	return &PersonalSettingsResp{
 		Currency: currency.TokenRUB,
 	}
