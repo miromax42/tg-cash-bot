@@ -14,7 +14,7 @@ build: bindir gen
 
 test: gen
 	go test ./... -coverprofile cover.out
-	go tool cover -func cover.out
+	go tool cover -func=cover.out | grep 'total:' | grep -o -E "[0-9\.]+%" | awk '{$2="total";print}'
 
 run:
 	go run ${PACKAGE}
