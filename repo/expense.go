@@ -14,12 +14,12 @@ type Expense interface {
 
 type CreateExpenseReq struct {
 	UserID   int64
-	Amount   int
+	Amount   float64
 	Category string
 }
 
 type CreateExpenseResp struct {
-	Amount    int
+	Amount    float64
 	Category  string
 	CreatedAt time.Time
 }
@@ -27,7 +27,7 @@ type CreateExpenseResp struct {
 func (r *CreateExpenseResp) String() string {
 	b := strings.Builder{}
 
-	b.WriteString(strconv.Itoa(r.Amount))
+	b.WriteString(strconv.FormatFloat(r.Amount, 'f', 2, 64))
 	b.WriteString(" on ")
 	b.WriteString(r.Category + "\n")
 	b.WriteString("(" + r.CreatedAt.Format(time.Kitchen) + ")")
@@ -41,26 +41,6 @@ type ListUserExpenseReq struct {
 }
 
 type ListUserExpenseResp []struct {
-	Category string `json:"category"`
-	Sum      int    `json:"sum"`
-}
-
-func (r ListUserExpenseResp) String() string {
-	b := strings.Builder{}
-
-	for i := range r {
-		b.WriteString(r[i].Category)
-		b.WriteString(": ")
-		b.WriteString(strconv.Itoa(r[i].Sum))
-
-		if i != len(r)-1 {
-			b.WriteString("\n")
-		}
-	}
-
-	if b.Len() == 0 {
-		return "no expenses"
-	}
-
-	return b.String()
+	Category string  `json:"category"`
+	Sum      float64 `json:"sum"`
 }

@@ -8,13 +8,23 @@ import (
 
 type Config struct {
 	Telegram ConfigTelegram `mapstructure:",squash"`
+	Exchange ConfigExchange `mapstructure:",squash"`
 }
+
 type ConfigTelegram struct {
-	TelegramToken string `mapstructure:"TLG_TOKEN"`
+	Token string `mapstructure:"TLG_TOKEN"`
+}
+
+type ConfigExchange struct {
+	Token        string `mapstructure:"EXCHANGE_TOKEN"`
+	BaseCurrency string `mapstructure:"EXCHANGE_BASE_CURRENCY"`
 }
 
 func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("TLG_TOKEN", "")
+
+	viper.SetDefault("EXCHANGE_TOKEN", "")
+	viper.SetDefault("EXCHANGE_BASE_CURRENCY", "RUB")
 
 	viper.AutomaticEnv()
 

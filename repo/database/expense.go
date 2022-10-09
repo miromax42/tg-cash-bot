@@ -34,7 +34,7 @@ func (e Expense) CreateExpense(
 	return &repo.CreateExpenseResp{
 		Amount:    model.Amount,
 		Category:  model.Category,
-		CreatedAt: model.CreatedAt,
+		CreatedAt: model.CreateTime,
 	}, nil
 }
 
@@ -42,7 +42,7 @@ func (e Expense) ListUserExpense(ctx context.Context, req repo.ListUserExpenseRe
 	var expenses repo.ListUserExpenseResp
 	if err := e.db.Expense.Query().
 		Where(expense.CreatedBy(req.UserID)).
-		Where(expense.CreatedAtGT(req.FromTime)).
+		Where(expense.CreateTimeGTE(req.FromTime)).
 		GroupBy(expense.FieldCategory).
 		Aggregate(ent.Sum(expense.FieldAmount)).
 		Scan(ctx, &expenses); err != nil {

@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Expense holds the schema definition for the Expense entity.
@@ -12,7 +13,7 @@ type Expense struct {
 
 func (Expense) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		TimeMixin{},
+		mixin.Time{},
 		OwnerMixin{},
 	}
 }
@@ -20,7 +21,7 @@ func (Expense) Mixin() []ent.Mixin {
 // Fields of the Expense.
 func (Expense) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("amount").
+		field.Float("amount").
 			Positive(),
 		field.String("category").Default("UNCATEGORIZED"),
 	}
