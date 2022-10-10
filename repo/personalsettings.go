@@ -13,11 +13,13 @@ type PersonalSettings interface {
 
 type PersonalSettingsResp struct {
 	Currency currency.Token
+	Limit    float64
 }
 
 type PersonalSettingsReq struct {
 	UserID   int64
 	Currency *currency.Token
+	Limit    *float64
 }
 
 func DefaultPersonalSettingsResp() *PersonalSettingsResp {

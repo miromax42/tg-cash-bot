@@ -2,6 +2,7 @@ package exhange
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -121,7 +122,7 @@ func (s *ExchangeSuite) TestConverter_Convert() {
 				t.Errorf("Convert() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if gotAmount != tt.wantAmount {
+			if fmt.Sprintf("%.4f", gotAmount) != fmt.Sprintf("%.4f", tt.wantAmount) {
 				t.Errorf("Convert() gotAmount = %v, want %v", gotAmount, tt.wantAmount)
 			}
 		})

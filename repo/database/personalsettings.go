@@ -29,17 +29,21 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 
 	return &repo.PersonalSettingsResp{
 		Currency: settings.Currency,
+		Limit:    settings.Limit,
 	}, nil
 }
 
 func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq) error {
-	query := p.db.PersonalSettings.Create().SetID(req.UserID)
+	// query := p.db.PersonalSettings.Create().SetID(req.UserID)
+	//
+	// if req.Currency != nil {
+	// 	query.SetCurrency(*req.Currency)
+	// }
 
-	if req.Currency != nil {
-		query.SetCurrency(*req.Currency)
-	}
-
-	if err := query.
+	if err := p.db.PersonalSettings.Create().
+		SetID(req.UserID).
+		SetNillableCurrency(req.Currency).
+		SetNillableLimit(req.Limit).
 		OnConflict().
 		UpdateNewValues().
 		Exec(ctx); err != nil {

@@ -62,6 +62,8 @@ func (s *Server) setupRoutes() {
 	currencySelectorUI, anyButtonUI := getCurrencySelector()
 	s.bot.Handle("/currency", s.SelectCurrency(currencySelectorUI))
 	s.bot.Handle(anyButtonUI, s.SetCurrency)
+
+	s.bot.Handle("/limit", s.SetLimit)
 }
 
 func (s *Server) Start() {

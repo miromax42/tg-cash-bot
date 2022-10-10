@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -121,4 +122,29 @@ func (s *Server) SetCurrency(c tele.Context) error {
 	}
 
 	return c.Send("currency set to " + c.Data())
+}
+
+type SetLimitReq struct {
+	Limit float64
+}
+
+func (s *Server) SetLimit(c tele.Context) error {
+	req, err := NewSetLimitRequest(c)
+	if err != nil {
+		errors.SendError(c, errors.ErrInvalidSetLimit)
+		return err
+	}
+
+	repoReq := repo.PersonalSettingsReq{
+		UserID: c.Sender().ID,
+		Limit:  &req.Limit,
+	}
+
+	if err = s.userSettings.Set(context.TODO(), repoReq); err != nil {
+		errors.SendError(c, errors.ErrInternal)
+		return err
+	}
+
+	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))
+
 }

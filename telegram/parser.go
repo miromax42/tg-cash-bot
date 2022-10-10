@@ -75,5 +75,11 @@ func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 		UserID:   c.Sender().ID,
 		Currency: &newCurrency,
 	}, nil
+}
 
+func NewSetLimitRequest(c tele.Context) (SetLimitReq, error) {
+	limit, err := strconv.ParseFloat(c.Data(), 64)
+	return SetLimitReq{
+		Limit: limit,
+	}, err
 }

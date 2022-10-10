@@ -31,6 +31,9 @@ func (PersonalSettings) Fields() []ent.Field {
 			Annotations(&entsql.Annotation{
 				Default: currency.TokenRUB.String(),
 			}),
+		field.Float("limit").
+			Min(0).
+			Default(0),
 	}
 }
 

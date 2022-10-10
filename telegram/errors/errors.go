@@ -19,6 +19,11 @@ var (
 		Title:  "invalid request",
 		Detail: "use format [/all day]; you can use day, month, week, year or 2h30m",
 	}
+
+	ErrInvalidSetLimit = ErrObj{
+		Title:  "invalid request",
+		Detail: "use format [/limit <float>]",
+	}
 )
 
 type ErrObj struct {
