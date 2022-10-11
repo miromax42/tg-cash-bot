@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
@@ -19,6 +20,7 @@ func (OwnerMixin) Fields() []ent.Field {
 
 func (OwnerMixin) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("created_by"),
+		index.Fields("created_by").
+			Annotations(entsql.IndexType("HASH")),
 	}
 }
