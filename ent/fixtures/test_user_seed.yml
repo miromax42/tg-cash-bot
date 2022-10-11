@@ -1,0 +1,22 @@
+personal_settings:
+  - id: {{$.ID}}
+    create_time: RAW=NOW()
+    update_time: RAW=NOW()
+    currency: RUB
+    limit: 100
+expenses:
+   - create_time: RAW=NOW()
+     update_time: RAW=NOW()
+     created_by: {{$.ID}}
+     amount: 10
+     category: courses
+   - create_time: RAW=NOW()
+     update_time: RAW=NOW()
+     created_by: {{$.ID}}
+     amount: 40.50
+     category: courses
+   - create_time: RAW=NOW()
+     update_time: RAW=NOW()
+     created_by: {{$.ID}}
+     amount: 22.99
+     category: bananas

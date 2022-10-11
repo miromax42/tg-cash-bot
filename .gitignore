@@ -3,6 +3,7 @@ test.env
 
 # ent
 !ent/migrate/migrations
+!ent/fixtures
 !ent/migrate/main.go
 !ent/schema
 !ent/entc.go

@@ -6,6 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"entgo.io/ent/dialect/sql"
+	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
@@ -21,6 +23,8 @@ import (
 )
 
 func main() {
+	const postgres = "postgres"
+
 	var (
 		db       *ent.Client
 		exchange currency.Exchange
@@ -40,7 +44,7 @@ func main() {
 	init, initCtx := errgroup.WithContext(mainCtx)
 
 	init.Go(func() (err error) {
-		db, err = ent.Open("postgres", cfg.DB.URL)
+		db, err = ent.Open(postgres, cfg.DB.URL)
 		if err != nil {
 			return fmt.Errorf("failed opening connection to sqlite: %w", err)
 		}
@@ -49,7 +53,7 @@ func main() {
 			return fmt.Errorf("failed creating schema resources: %w", err)
 		}
 
-		return nil
+		return initFixtures(postgres, cfg.DB)
 	})
 
 	init.Go(func() (err error) {
@@ -99,4 +103,31 @@ func main() {
 	} else {
 		log.Info("gracefully stopped!")
 	}
+}
+
+func initFixtures(dialect string, cfg util.ConfigDB) error {
+	if cfg.TestUserID == 0 {
+		return nil
+	}
+
+	sqlDB, err := sql.Open(dialect, cfg.URL)
+	if err != nil {
+		return err
+	}
+	defer sqlDB.Close()
+
+	fixtures, err := testfixtures.New(
+		testfixtures.Template(),
+		testfixtures.TemplateData(map[string]interface{}{
+			"ID": cfg.TestUserID,
+		}),
+		testfixtures.Database(sqlDB.DB()),
+		testfixtures.Dialect(dialect),
+		testfixtures.FilesMultiTables("ent/fixtures/test_user_seed.yml"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return fixtures.Load()
 }

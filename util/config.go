@@ -22,7 +22,8 @@ type ConfigExchange struct {
 }
 
 type ConfigDB struct {
-	URL string `mapstructure:"DB_URL"`
+	URL        string `mapstructure:"DB_URL"`
+	TestUserID int64  `mapstructure:"DB_TEST_USER_ID"`
 }
 
 func NewConfig() (cfg *Config, err error) {
@@ -32,6 +33,7 @@ func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("EXCHANGE_BASE_CURRENCY", "RUB")
 
 	viper.SetDefault("DB_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+	viper.SetDefault("DB_TEST_USER_ID", 0)
 
 	viper.AutomaticEnv()
 
