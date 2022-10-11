@@ -3,8 +3,11 @@ package database
 import (
 	"context"
 
+	"entgo.io/ent/dialect/sql"
+
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 type PersonalSettings struct {
@@ -34,21 +37,27 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 }
 
 func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq) error {
-	// query := p.db.PersonalSettings.Create().SetID(req.UserID)
-	//
-	// if req.Currency != nil {
-	// 	query.SetCurrency(*req.Currency)
-	// }
+	return WithTx(ctx, p.db, func(tx *ent.Tx) error {
+		expenses := NewExpense(p.db)
+		sum, err := expenses.allUserExpense(ctx, repo.ListUserExpenseReq{
+			UserID:   req.UserID,
+			FromTime: util.TimeMonthAgo(),
+		})
+		if err != nil {
+			return err
+		}
+		if req.Limit != nil && sum < *req.Limit {
+			return util.ErrLimitExceed
+		}
 
-	if err := p.db.PersonalSettings.Create().
-		SetID(req.UserID).
-		SetNillableCurrency(req.Currency).
-		SetNillableLimit(req.Limit).
-		OnConflict().
-		UpdateNewValues().
-		Exec(ctx); err != nil {
-		return err
-	}
-
-	return nil
+		return p.db.PersonalSettings.Create().
+			SetID(req.UserID).
+			SetNillableCurrency(req.Currency).
+			SetNillableLimit(req.Limit).
+			OnConflict(
+				sql.ConflictColumns("id"),
+			).
+			UpdateNewValues().
+			Exec(ctx)
+	})
 }

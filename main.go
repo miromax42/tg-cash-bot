@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -39,7 +40,7 @@ func main() {
 	init, initCtx := errgroup.WithContext(mainCtx)
 
 	init.Go(func() (err error) {
-		db, err = ent.Open("sqlite3", "file:test.db?_fk=1")
+		db, err = ent.Open("postgres", cfg.DB.URL)
 		if err != nil {
 			return fmt.Errorf("failed opening connection to sqlite: %w", err)
 		}

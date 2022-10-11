@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 )
 
@@ -21,23 +20,8 @@ type PersonalSettingsSuite struct {
 }
 
 func (s *PersonalSettingsSuite) SetupSuite() {
-	db, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	require.NoError(s.T(), err)
-
-	err = db.Schema.Create(context.Background())
-	require.NoError(s.T(), err)
-
-	s.c = NewPersonalSettings(db)
-
+	s.c = NewPersonalSettings(GetDB(s.T()))
 	s.generatorID = generator()
-}
-
-func generator() func() int64 {
-	var inc int64
-	return func() int64 {
-		inc++
-		return inc
-	}
 }
 
 func TestPersonalSettingsSuite(t *testing.T) {

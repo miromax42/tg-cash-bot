@@ -1,4 +1,4 @@
-package errors
+package tools
 
 import (
 	"strings"
@@ -23,6 +23,11 @@ var (
 	ErrInvalidSetLimit = ErrObj{
 		Title:  "invalid request",
 		Detail: "use format [/limit <float>]",
+	}
+
+	ErrLimitConsistency = ErrObj{
+		Title:  "inconsistent request",
+		Detail: "cant do operation because of limit",
 	}
 )
 

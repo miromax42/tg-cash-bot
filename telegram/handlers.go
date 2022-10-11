@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -10,7 +11,8 @@ import (
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/errors"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 const oneCoin = 1
@@ -34,7 +36,7 @@ type CreateExpenseReq struct {
 func (s *Server) CreateExpense(c tele.Context) error {
 	req, err := NewCreateExpenseReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInvalidCreateExpense)
+		tools.SendError(c, tools.ErrInvalidCreateExpense)
 		return err
 	}
 
@@ -44,7 +46,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		To:     s.exchange.Base(),
 	})
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
@@ -56,7 +58,12 @@ func (s *Server) CreateExpense(c tele.Context) error {
 
 	resp, err := s.expense.CreateExpense(context.TODO(), databaseReq)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		if errors.Is(err, util.ErrLimitExceed) {
+			tools.SendError(c, tools.ErrLimitConsistency)
+			return err
+		}
+
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
@@ -71,7 +78,7 @@ type ListUserExpenseReq struct {
 func (s *Server) ListExpenses(c tele.Context) error {
 	req, err := NewListUserExpenseReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInvalidListExpense)
+		tools.SendError(c, tools.ErrInvalidListExpense)
 		return err
 	}
 
@@ -82,7 +89,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 
 	resp, err := s.expense.ListUserExpense(context.TODO(), databaseReq)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
@@ -92,7 +99,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 	})
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
@@ -112,12 +119,12 @@ func (s *Server) SetCurrency(c tele.Context) error {
 
 	req, err := NewPersonalSettingsReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
 	if err := s.userSettings.Set(context.TODO(), req); err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
@@ -131,20 +138,30 @@ type SetLimitReq struct {
 func (s *Server) SetLimit(c tele.Context) error {
 	req, err := NewSetLimitRequest(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInvalidSetLimit)
+		tools.SendError(c, tools.ErrInvalidSetLimit)
 		return err
 	}
 
+	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+		Amount: req.Limit,
+		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
+		To:     s.exchange.Base(),
+	})
+
 	repoReq := repo.PersonalSettingsReq{
 		UserID: c.Sender().ID,
-		Limit:  &req.Limit,
+		Limit:  &amount,
 	}
 
 	if err = s.userSettings.Set(context.TODO(), repoReq); err != nil {
-		errors.SendError(c, errors.ErrInternal)
+		if errors.Is(err, util.ErrLimitExceed) {
+			tools.SendError(c, tools.ErrLimitConsistency)
+			return err
+		}
+
+		tools.SendError(c, tools.ErrInternal)
 		return err
 	}
 
 	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))
-
 }
