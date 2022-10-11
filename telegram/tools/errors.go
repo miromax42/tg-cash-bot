@@ -25,9 +25,14 @@ var (
 		Detail: "use format [/limit <float>]",
 	}
 
-	ErrLimitConsistency = ErrObj{
+	ErrLimitBlockExpense = ErrObj{
 		Title:  "inconsistent request",
 		Detail: "cant do operation because of limit",
+	}
+
+	ErrSetLimitBlockedByExpenses = ErrObj{
+		Title:  "inconsistent request",
+		Detail: "cant set limit less then sum",
 	}
 )
 

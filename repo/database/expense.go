@@ -77,7 +77,8 @@ func (e Expense) ListUserExpense(ctx context.Context, req repo.ListUserExpenseRe
 
 func (e Expense) allUserExpense(ctx context.Context, req repo.ListUserExpenseReq) (float64, error) {
 	var result []struct {
-		Sum    float64 `json:"sum"`
+		Sum       float64 `json:"sum"`
+		CreatedBy string  `json:"created_by"`
 	}
 
 	if err := e.db.Expense.Query().

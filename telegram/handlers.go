@@ -59,8 +59,8 @@ func (s *Server) CreateExpense(c tele.Context) error {
 	resp, err := s.expense.CreateExpense(context.TODO(), databaseReq)
 	if err != nil {
 		if errors.Is(err, util.ErrLimitExceed) {
-			tools.SendError(c, tools.ErrLimitConsistency)
-			return err
+			tools.SendError(c, tools.ErrLimitBlockExpense)
+			return nil
 		}
 
 		tools.SendError(c, tools.ErrInternal)
@@ -155,8 +155,8 @@ func (s *Server) SetLimit(c tele.Context) error {
 
 	if err = s.userSettings.Set(context.TODO(), repoReq); err != nil {
 		if errors.Is(err, util.ErrLimitExceed) {
-			tools.SendError(c, tools.ErrLimitConsistency)
-			return err
+			tools.SendError(c, tools.ErrSetLimitBlockedByExpenses)
+			return nil
 		}
 
 		tools.SendError(c, tools.ErrInternal)

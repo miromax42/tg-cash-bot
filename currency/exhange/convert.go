@@ -85,11 +85,11 @@ func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token
 	}
 
 	res, err := client.Do(req)
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
 	if err != nil {
 		return nil, err
+	}
+	if res.Body != nil {
+		defer res.Body.Close()
 	}
 
 	body, err := io.ReadAll(res.Body)

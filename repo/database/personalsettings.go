@@ -46,7 +46,7 @@ func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq
 		if err != nil {
 			return err
 		}
-		if req.Limit != nil && sum < *req.Limit {
+		if req.Limit != nil && sum > *req.Limit {
 			return util.ErrLimitExceed
 		}
 
