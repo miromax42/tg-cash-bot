@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"fmt"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -52,7 +53,7 @@ func (s *Server) setupRoutes() {
 	s.bot.Use(s.Authentication)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {
-		return c.Send("pong!")
+		return c.Send(fmt.Sprintf("pong! Your id: %d", c.Sender().ID))
 	})
 	s.bot.Handle("/start", s.StartHelp)
 
