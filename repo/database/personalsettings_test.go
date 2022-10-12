@@ -25,7 +25,7 @@ func (s *PostgresTestSuite) TestGet() {
 	s.applyFixture(
 		"fixtures_test/test_personal_settings_get.yml",
 		map[string]interface{}{
-			"idExist":     idExist,
+			"id":          idExist,
 			"currencyCNY": newCurrency.String(),
 		},
 	)
@@ -67,21 +67,12 @@ func (s *PostgresTestSuite) TestSet() {
 	var (
 		settings = NewPersonalSettings(s.c)
 
+		idWithLimit1 = s.generatorID()
+		idExist      = s.generatorID()
+
 		CurrencyCNY = currency.MustParse(currency.TokenCNY.String())
 		CurrencyEUR = currency.MustParse(currency.TokenEUR.String())
 	)
-
-	createWithCNY := func() int64 {
-		newID := s.generatorID()
-
-		err := settings.Set(context.Background(), repo.PersonalSettingsReq{
-			UserID:   newID,
-			Currency: &CurrencyCNY,
-		})
-		require.NoError(s.T(), err)
-
-		return newID
-	}
 
 	get := func(id int64) *repo.PersonalSettingsResp {
 		resp, err := settings.Get(context.Background(), id)
@@ -99,10 +90,8 @@ func (s *PostgresTestSuite) TestSet() {
 		{
 			"change existing",
 			func() repo.PersonalSettingsReq {
-				id := createWithCNY()
-
 				return repo.PersonalSettingsReq{
-					UserID:   id,
+					UserID:   idExist,
 					Currency: &CurrencyEUR,
 				}
 			},
@@ -112,10 +101,8 @@ func (s *PostgresTestSuite) TestSet() {
 		{
 			"set existing without currency",
 			func() repo.PersonalSettingsReq {
-				id := createWithCNY()
-
 				return repo.PersonalSettingsReq{
-					UserID:   id,
+					UserID:   idExist,
 					Currency: nil,
 				}
 			},
@@ -146,9 +133,35 @@ func (s *PostgresTestSuite) TestSet() {
 			&repo.PersonalSettingsResp{Currency: currency.TokenRUB},
 			false,
 		},
+		{
+			"set above limit",
+			func() repo.PersonalSettingsReq {
+				limit := 0.1
+
+				return repo.PersonalSettingsReq{
+					UserID:   idWithLimit1,
+					Currency: nil,
+					Limit:    &limit,
+				}
+			},
+			&repo.PersonalSettingsResp{
+				Currency: currency.TokenRUB,
+				Limit:    1,
+			},
+			true,
+		},
 	}
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {
+			s.applyFixture(
+				"fixtures_test/test_personal_settings_set.yml",
+				map[string]interface{}{
+					"id":           idExist,
+					"currencyCNY":  CurrencyCNY.String(),
+					"idWithLimit1": idWithLimit1,
+				},
+			)
+
 			arg := tt.prepare()
 			err := settings.Set(context.Background(), arg)
 			if (err != nil) != tt.wantErr {

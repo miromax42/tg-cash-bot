@@ -1,3 +1,3 @@
 personal_settings:
-  - id: {{$.idExist}}
+  - id: {{$.id}}
     currency: {{$.currencyCNY}}

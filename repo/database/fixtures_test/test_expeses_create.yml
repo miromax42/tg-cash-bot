@@ -1,0 +1,14 @@
+personal_settings:
+  - id: {{$.idWithLimit1000}}
+    limit: 1000
+  - id: {{$.idWithLimit1}}
+    limit: 1
+  - id: {{$.idWithLimitNotSet}}
+    limit: 0
+expenses:
+  - created_by: {{$.idWithLimit1}}
+    amount: 0.5
+  - created_by: {{$.idWithLimit1000}}
+    amount: 20
+  - created_by: {{$.idWithLimitNotSet}}
+    amount: 20000

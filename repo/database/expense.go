@@ -39,7 +39,7 @@ func (e Expense) CreateExpense(
 			return err
 		}
 
-		if sum+req.Amount > userSettings.Limit {
+		if sum+req.Amount > userSettings.Limit && userSettings.Limit != 0 {
 			return util.ErrLimitExceed
 		}
 

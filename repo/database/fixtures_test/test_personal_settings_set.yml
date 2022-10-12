@@ -1,0 +1,9 @@
+personal_settings:
+  - id: {{$.id}}
+    currency: {{$.currencyCNY}}
+  - id: {{$.idWithLimit1}}
+    limit: 1
+expenses:
+  - created_by: {{$.idWithLimit1}}
+    amount: 0.5
+    category: testing_golang_applications
