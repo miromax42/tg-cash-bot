@@ -5,3 +5,4 @@ package main
 //go:generate go run -mod=mod github.com/vektra/mockery/v2 --all --keeptree --dir ./currency
 //go:generate go run -mod=mod github.com/vektra/mockery/v2 --all --keeptree --dir ./currency
 //go:generate go run -mod=mod github.com/vektra/mockery/v2 --all --keeptree --dir ./telegram/tools
+//go:generate go run -mod=mod github.com/vektra/mockery/v2 --all --keeptree --dir ./util

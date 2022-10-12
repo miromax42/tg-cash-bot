@@ -6,5 +6,5 @@ var (
 	ErrBadFormat   = errors.New("bad format")
 	ErrUnsupported = errors.New("not supported")
 	ErrBadResponse = errors.New("bad response")
-	ErrLimitExceed = errors.New("limit exce")
+	ErrLimitExceed = errors.New("limit exceed")
 )

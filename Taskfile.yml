@@ -37,3 +37,4 @@ tasks:
       - mockery --all --keeptree --dir ./currency
       - mockery --all --keeptree --dir ./currency
       - mockery --all --keeptree --dir ./telegram/tools
+      - mockery --all --keeptree --dir ./util

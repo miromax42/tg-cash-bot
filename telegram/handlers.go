@@ -17,7 +17,7 @@ import (
 
 const oneCoin = 1
 
-func (s *Server) StartHelp(c tele.Context) error {
+func StartHelp(c tele.Context) error {
 	b := strings.Builder{}
 
 	b.WriteString("available commands:\n")
