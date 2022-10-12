@@ -35,9 +35,15 @@ func (TimeMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("create_time").
 			Immutable().
-			Default(time.Now),
+			Default(time.Now()).
+			Annotations(&entsql.Annotation{
+				Default: "CURRENT_TIMESTAMP",
+			}),
 		field.Time("update_time").
-			Default(time.Now).
-			UpdateDefault(time.Now),
+			UpdateDefault(time.Now).
+			Default(time.Now()).
+			Annotations(&entsql.Annotation{
+				Default: "CURRENT_TIMESTAMP",
+			}),
 	}
 }
