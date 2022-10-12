@@ -30,3 +30,10 @@ tasks:
     go run -mod=mod ariga.io/atlas/cmd/atlas migrate apply
     --dir {{.MIGRATE_DIR}}
     --url {{.DB_URL}}
+
+  mock:
+    cmds:
+      - mockery --all --keeptree --dir ./repo
+      - mockery --all --keeptree --dir ./currency
+      - mockery --all --keeptree --dir ./currency
+      - mockery --all --keeptree --dir ./telegram/tools

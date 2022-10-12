@@ -7,40 +7,28 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 )
 
-type PersonalSettingsSuite struct {
-	suite.Suite
-	c           repo.PersonalSettings
-	generatorID func() int64
-}
-
-func (s *PersonalSettingsSuite) SetupSuite() {
-	s.c = NewPersonalSettings(GetDB(s.T()))
-	s.generatorID = generator()
-}
-
-func TestPersonalSettingsSuite(t *testing.T) {
-	t.Parallel()
-	suite.Run(t, new(PersonalSettingsSuite))
-}
-
-func (s *PersonalSettingsSuite) TestGet() {
+func (s *PostgresTestSuite) TestGet() {
 	var (
+		settings = NewPersonalSettings(s.c)
+
 		idNotExists = s.generatorID()
 		idExist     = s.generatorID()
+
+		newCurrency = currency.MustParse(currency.TokenCNY.String())
 	)
 
-	newCurrency := currency.MustParse(currency.TokenCNY.String())
-	err := s.c.Set(context.Background(), repo.PersonalSettingsReq{
-		UserID:   idExist,
-		Currency: &newCurrency,
-	})
-	require.NoError(s.T(), err)
+	s.applyFixture(
+		"fixtures_test/test_personal_settings_get.yml",
+		map[string]interface{}{
+			"idExist":     idExist,
+			"currencyCNY": newCurrency.String(),
+		},
+	)
 
 	tests := []struct {
 		name    string
@@ -63,7 +51,7 @@ func (s *PersonalSettingsSuite) TestGet() {
 	}
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {
-			got, err := s.c.Get(context.Background(), tt.arg)
+			got, err := settings.Get(context.Background(), tt.arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -75,14 +63,18 @@ func (s *PersonalSettingsSuite) TestGet() {
 	}
 }
 
-func (s *PersonalSettingsSuite) TestSet() {
-	CurrencyCNY := currency.MustParse(currency.TokenCNY.String())
-	CurrencyEUR := currency.MustParse(currency.TokenEUR.String())
+func (s *PostgresTestSuite) TestSet() {
+	var (
+		settings = NewPersonalSettings(s.c)
+
+		CurrencyCNY = currency.MustParse(currency.TokenCNY.String())
+		CurrencyEUR = currency.MustParse(currency.TokenEUR.String())
+	)
 
 	createWithCNY := func() int64 {
 		newID := s.generatorID()
 
-		err := s.c.Set(context.Background(), repo.PersonalSettingsReq{
+		err := settings.Set(context.Background(), repo.PersonalSettingsReq{
 			UserID:   newID,
 			Currency: &CurrencyCNY,
 		})
@@ -92,7 +84,7 @@ func (s *PersonalSettingsSuite) TestSet() {
 	}
 
 	get := func(id int64) *repo.PersonalSettingsResp {
-		resp, err := s.c.Get(context.Background(), id)
+		resp, err := settings.Get(context.Background(), id)
 		require.NoError(s.T(), err)
 
 		return resp
@@ -158,7 +150,7 @@ func (s *PersonalSettingsSuite) TestSet() {
 	for _, tt := range tests {
 		s.T().Run(tt.name, func(t *testing.T) {
 			arg := tt.prepare()
-			err := s.c.Set(context.Background(), arg)
+			err := settings.Set(context.Background(), arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 				return

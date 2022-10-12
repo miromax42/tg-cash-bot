@@ -1,0 +1,5 @@
+personal_settings:
+  - id: {{$.idExist}}
+    currency: {{$.currencyCNY}}
+    create_time: RAW=NOW()
+    update_time: RAW=NOW()

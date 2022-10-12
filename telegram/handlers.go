@@ -20,7 +20,7 @@ const oneCoin = 1
 func (s *Server) StartHelp(c tele.Context) error {
 	b := strings.Builder{}
 
-	b.WriteString("availible commands:\n")
+	b.WriteString("available commands:\n")
 	b.WriteString("/exp 99 Fun -- adds expense 99 of Fun category\n")
 	b.WriteString("/all day -- show expenses for last day,\n\t examples of time modificators [day, week, month, year, 2h30m]\n")
 
