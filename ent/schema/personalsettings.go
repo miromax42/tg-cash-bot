@@ -4,7 +4,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/mixin"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 )
@@ -16,7 +15,7 @@ type PersonalSettings struct {
 
 func (PersonalSettings) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mixin.Time{},
+		TimeMixin{},
 	}
 }
 

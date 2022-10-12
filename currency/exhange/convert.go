@@ -20,7 +20,7 @@ type Converter struct {
 func New(ctx context.Context, cfg util.ConfigExchange) (*Converter, error) {
 	data, err := getValues(ctx, cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("maybe token exceed: %w", err)
 	}
 
 	return &Converter{

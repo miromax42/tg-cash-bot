@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/field"
@@ -22,5 +24,20 @@ func (OwnerMixin) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("created_by").
 			Annotations(entsql.IndexType("HASH")),
+	}
+}
+
+type TimeMixin struct {
+	mixin.Schema
+}
+
+func (TimeMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Time("create_time").
+			Immutable().
+			Default(time.Now),
+		field.Time("update_time").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 	}
 }

@@ -26,7 +26,6 @@ func (s *ExchangeSuite) SetupSuite() {
 }
 
 func TestExchangeSuite(t *testing.T) {
-	t.Parallel()
 	suite.Run(t, new(ExchangeSuite))
 }
 
