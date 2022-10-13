@@ -32,8 +32,7 @@ tasks:
     status:
       - golangci-lint --version
     cmds:
-      - GOBIN={{.BINDIR}} go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINTVER}}
-      - mv {{.BINDIR}}/golangci-lint {{.LINTBIN}}
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINTVER}}
 
   lint:
     deps: [install-lint,gen]
