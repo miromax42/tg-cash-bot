@@ -1,4 +1,4 @@
-.postgres_template: &postgres_service  # Hidden yaml configuration that defines an anchor named 'job_configuration'
+.postgres_template: &postgres_service
   stage: test
   services:
     - postgres:latest
