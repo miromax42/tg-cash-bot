@@ -12,7 +12,6 @@ dotenv: ['.env', '{{.ENV}}.env']
 
 vars:
   MIGRATE_DIR: file://ent/migrate/migrations
-  BINDIR: ${PWD}/bin
 
 
 tasks:
