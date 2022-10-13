@@ -9,7 +9,7 @@ vars:
   MIGRATE_DIR: file://ent/migrate/migrations
   BINDIR: ${PWD}/bin
   LINTBIN: ${BINDIR}/lint_{{.GOVER}}_{{.LINTVER}}
-  PG_DEFAULT_URL: postgres://user-ci:pass-ci@postgres-ci:5432/postgres?sslmode=disable
+  PG_DEFAULT_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOSTNAME}:5432/postgres?sslmode=disable
 
 tasks:
   bindir: mkdir -p {{.BINDIR}}
