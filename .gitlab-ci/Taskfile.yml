@@ -9,7 +9,7 @@ vars:
   MIGRATE_DIR: file://ent/migrate/migrations
   BINDIR: ${PWD}/bin
   LINTBIN: ${BINDIR}/lint_{{.GOVER}}_{{.LINTVER}}
-  PG_DEFAULT_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+  PG_DEFAULT_URL: postgres://user-ci:pass-ci@postgres-ci:5432/postgres?sslmode=disable
 
 tasks:
   bindir: mkdir -p {{.BINDIR}}
@@ -33,7 +33,7 @@ tasks:
       - golangci-lint --version
     cmds:
       - GOBIN={{.BINDIR}} go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINTVER}}
-#      - mv {{.BINDIR}}/golangci-lint {{.LINTBIN}}
+      - mv {{.BINDIR}}/golangci-lint {{.LINTBIN}}
 
   lint:
     deps: [install-lint,gen]
