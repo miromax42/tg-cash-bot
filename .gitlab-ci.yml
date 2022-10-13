@@ -1,11 +1,13 @@
 default:
   image: golang:latest
-  before_script:
-    - go install github.com/go-task/task/v3/cmd/task@latest
-
+    
 stages:
   - build
   - test
+
+.pre:
+  script:
+    - go install github.com/go-task/task/v3/cmd/task@latest
 
 build:
   stage: build
