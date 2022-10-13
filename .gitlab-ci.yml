@@ -24,6 +24,7 @@ lint:
 
 migration-verify:
   stage: test
-  services: [postgres:latest]
+  services: 
+    - postgres:latest
   script:
     - task ci:migration-verify
