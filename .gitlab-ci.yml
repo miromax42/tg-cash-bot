@@ -10,14 +10,20 @@ stages:
 build:
   stage: build
   script:
-    - make build
+    - task ci:build
 
 test:
   stage: test
   script:
-    - task test-full
+    - task ci:test
 
 lint:
   stage: test
   script:
-    - make lint
+    - task ci:lint
+
+migration-verify:
+  stage: test
+  image: postgres:latest
+  script:
+    - task ci:migration-verify
