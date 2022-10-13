@@ -15,13 +15,13 @@ default:
     - go install github.com/go-task/task/v3/cmd/task@latest
     
 stages:
-#  - build
+  - build
   - test
 
-#build:
-#  stage: build
-#  script:
-#    - task ci:build
+build:
+  stage: build
+  script:
+    - task ci:build
 
 test:
   <<: *postgres_service
