@@ -13,7 +13,7 @@ build:
 test:
   stage: test
   script:
-    - make test
+    - task test-full
 
 lint:
   stage: test

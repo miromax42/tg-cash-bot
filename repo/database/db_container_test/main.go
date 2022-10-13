@@ -44,6 +44,7 @@ func NewTestDatabase() (*TestDatabase, error) {
 func (db *TestDatabase) Port() int {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+
 	p, err := db.instance.MappedPort(ctx, "5432")
 	if err != nil {
 		log.Panic("cannot get port:", err)

@@ -10,12 +10,24 @@ vars:
 
 
 tasks:
+  gen: go generate ./...
+  test-full:
+    cmds:
+      - go test --coverprofile=coverage.out ./... -short
+      - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
+  build:
+    cmds:
+      - task: gen
+      - go build -o ./bin/bot ./...
   test:
     cmds:
       - go test --coverprofile=coverage.out ./... -short
       - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
+
+
   run: go run ./...
-  gen: go generate ./...
+
+
   lint: golangci-lint run ./...
 
   migration-verify: >
