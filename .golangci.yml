@@ -23,11 +23,10 @@ linters-settings:
       - diagnostic
       - style
       - opinionated
-
   nakedret:
-    max-func-lines: 30
+    max-func-lines: 20
   goimports:
-    local-prefixes: git.dev.cloud.mts.ru
+    local-prefixes: gitlab.ozon.dev
 
 linters:
   enable:
@@ -44,7 +43,6 @@ linters:
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
     - execinquery # execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds
     - exhaustive # check exhaustiveness of enum switch statements and map literals
-    - exhaustruct # Checks if all structure fields are initialized
     - exportloopref # checks for pointers to enclosing loop variables
     - forbidigo # forbid regexp: default pattern of ^(fmt\.Print.*|print|println)$ is used to eliminate debug statements
     - forcetypeassert # finds forced type assertions
@@ -74,46 +72,24 @@ linters:
     - unconvert
     - unparam
     - usestdlibvars
+    - tparallel
 
 issues:
-  exclude:
-    - var-naming
-    - tableName
-    - language
   exclude-rules:
-    - path: pkg/adapters/jira/client/client.go
-      text: "G402" # G402: TLS InsecureSkipVerify set true.
-      linters:
-        - gosec
-    - path: pkg/adapters/siebel/client.go
-      text: "G402" # G402: TLS InsecureSkipVerify set true.
-      linters:
-        - gosec
-    - path: pkg/adapters/hub/client.go
-      text: "G101" # G101: Potential hardcoded credentials.
-      linters:
-        - gosec
-    - path: pkg/infra/config/config.go
-      linters:
-        - exhaustruct
-        - gomnd
-    - path: pkg/components/service/report/excel/models.go
-      linters:
-        - gomnd
-    - path: pkg/components/service/permissions_list.go
-      linters:
-        - gochecknoglobals
     - path: test.*\.go
       linters:
-        - gocyclo
         - errcheck
         - dupl
         - gosec
         - dogsled
         - gomnd
         - gochecknoglobals
-        - exhaustruct
         - funlen
+        - varnamelen
+    - path: config.go
+      linters:
+        - dogsled
+        - gomnd
 
 run:
   timeout: 5m
