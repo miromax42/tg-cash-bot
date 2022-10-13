@@ -18,6 +18,10 @@ type ExchangeSuite struct {
 }
 
 func (s *ExchangeSuite) SetupSuite() {
+	if testing.Short() {
+		s.T().Skip()
+	}
+
 	cfg, err := util.NewConfig()
 	require.NoError(s.T(), err)
 

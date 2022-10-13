@@ -15,6 +15,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/mocks"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
@@ -148,7 +149,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 				srv.expense = expense
 			},
 			true,
-			nil,
+			tools.ErrLimitBlockExpense,
 		},
 	}
 
