@@ -19,7 +19,7 @@ tasks:
   gen: go generate ./...
   test:
     cmds:
-      - go test --coverprofile=coverage.out ./... -short
+      - go test --coverprofile=coverage.out ./...
       - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
 
 
