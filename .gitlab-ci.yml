@@ -1,7 +1,6 @@
 .postgres_template: &postgres_service
   stage: test
   services:
-    - postgres:latest
     - name: postgres:latest
       alias: postgres-ci
   variables:
