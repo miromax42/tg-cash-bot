@@ -24,7 +24,7 @@ tasks:
   build:
     deps: [bindir,gen]
     cmds:
-      - go build -o {{.BINDIR}}/bot ./...
+      - go build -o {{.BINDIR}}/bot ./main.go
 
   install-lint:
     deps: [bindir]
