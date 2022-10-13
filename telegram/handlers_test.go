@@ -72,6 +72,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 				c.On("Sender").Return(&telebot.User{ID: userID})
 				c.On("Args").Return([]string{amount, category})
 				c.On("Send", mock.AnythingOfType("string")).Return(nil)
+
 				return c
 			},
 			func(srv *Server) {
@@ -117,6 +118,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 						return strings.Contains(s, "limit")
 					}),
 				).Return(nil)
+
 				return c
 			},
 			func(srv *Server) {
@@ -195,6 +197,7 @@ func (s *HandlersTestSuite) TestSetLimit() {
 					mock.MatchedBy(func(s string) bool {
 						return strings.Contains(s, fmt.Sprintf("%.2f", limitFloat))
 					})).Return(nil)
+
 				return c
 			},
 			func(srv *Server) {

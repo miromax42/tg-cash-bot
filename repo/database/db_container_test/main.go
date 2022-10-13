@@ -46,7 +46,7 @@ func (db *TestDatabase) Port() int {
 	defer cancel()
 	p, err := db.instance.MappedPort(ctx, "5432")
 	if err != nil {
-		log.Fatal("cannot get port:", err)
+		log.Panic("cannot get port:", err)
 	}
 
 	return p.Int()

@@ -22,9 +22,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
-func main() {
-	const postgres = "postgres"
-
+func main() { //nolint:funlen // main func
 	var (
 		db       *ent.Client
 		exchange currency.Exchange
@@ -38,22 +36,13 @@ func main() {
 
 	cfg, err := util.NewConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
 	init, initCtx := errgroup.WithContext(mainCtx)
 
-	init.Go(func() (err error) {
-		db, err = ent.Open(postgres, cfg.DB.URL)
-		if err != nil {
-			return fmt.Errorf("failed opening connection to sqlite: %w", err)
-		}
-
-		if err := db.Schema.Create(initCtx); err != nil {
-			return fmt.Errorf("failed creating schema resources: %w", err)
-		}
-
-		return initFixtures(postgres, cfg.DB)
+	init.Go(func() error {
+		return migrateDB(initCtx, cfg.DB)
 	})
 
 	init.Go(func() (err error) {
@@ -65,7 +54,7 @@ func main() {
 	})
 
 	if err := init.Wait(); err != nil {
-		log.Fatalf("exit reason: %s \n", err)
+		log.Panicf("exit reason: %s \n", err)
 	}
 
 	work, workCtx := errgroup.WithContext(mainCtx)
@@ -99,10 +88,23 @@ func main() {
 	})
 
 	if err := work.Wait(); err != nil {
-		log.Fatalf("gracefull stop: %s \n", err)
+		log.Panicf("gracefull stop: %s \n", err)
 	} else {
 		log.Info("gracefully stopped!")
 	}
+}
+
+func migrateDB(ctx context.Context, cfg util.ConfigDB) error {
+	db, err := ent.Open("postgres", cfg.URL)
+	if err != nil {
+		return fmt.Errorf("failed opening connection to sqlite: %w", err)
+	}
+
+	if err := db.Schema.Create(ctx); err != nil {
+		return fmt.Errorf("failed creating schema resources: %w", err)
+	}
+
+	return initFixtures("postgres", cfg)
 }
 
 func initFixtures(dialect string, cfg util.ConfigDB) error {

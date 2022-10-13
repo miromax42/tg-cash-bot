@@ -7,47 +7,58 @@ import (
 )
 
 var (
-	ErrInvalidCreateExpense = ErrObj{
+	ErrInvalidCreateExpense = TelegramError{
 		Title:  "invalid request",
 		Detail: "use format [/exp 100 Food]; where 100 is price and number, Food is any string",
 	}
-	ErrInternal = ErrObj{
+	ErrInternal = TelegramError{
 		Title:  "internal error",
 		Detail: "bot eaten too much fastfood",
 	}
-	ErrInvalidListExpense = ErrObj{
+	ErrInvalidListExpense = TelegramError{
 		Title:  "invalid request",
 		Detail: "use format [/all day]; you can use day, month, week, year or 2h30m",
 	}
 
-	ErrInvalidSetLimit = ErrObj{
+	ErrInvalidSetLimit = TelegramError{
 		Title:  "invalid request",
 		Detail: "use format [/limit <float>]",
 	}
 
-	ErrLimitBlockExpense = ErrObj{
+	ErrLimitBlockExpense = TelegramError{
 		Title:  "inconsistent request",
 		Detail: "cant do operation because of limit",
 	}
 
-	ErrSetLimitBlockedByExpenses = ErrObj{
-		Title:  "inconsistent request",
-		Detail: "cant set limit less then sum",
+	ErrSetLimitBlockedByExpenses = TelegramError{
+		Title:      "inconsistent request",
+		Detail:     "cant set limit less then sum",
+		isExpected: true,
 	}
 )
 
-type ErrObj struct {
-	Title  string
-	Detail string
+type TelegramError struct {
+	Title      string
+	Detail     string
+	isExpected bool
 }
 
-func (e ErrObj) Error() string {
+func (e TelegramError) Error() string {
 	b := strings.Builder{}
+
 	b.WriteString("Error happened :(\n")
 	b.WriteString(e.Title + ": " + e.Detail)
+
 	return b.String()
 }
 
-func SendError(c tele.Context, e ErrObj) {
+// SendError default value of returnErr=true
+func SendError(c tele.Context, e TelegramError) error {
 	_ = c.Send(e.Error())
+
+	if e.isExpected {
+		return nil
+	}
+
+	return e
 }

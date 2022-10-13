@@ -28,7 +28,7 @@ func NewServer(
 ) (*Server, error) {
 	pref := tele.Settings{
 		Token:  cfg.Token,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Poller: &tele.LongPoller{Timeout: 10 * time.Second}, //nolint:gomnd
 	}
 
 	bot, err := tele.NewBot(pref)

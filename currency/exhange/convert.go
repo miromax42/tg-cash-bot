@@ -48,10 +48,10 @@ func (c *Converter) Convert(_ context.Context, req currency.ConvertReq) (amount 
 	return coefficient * req.Amount, nil
 }
 
-func (c *Converter) getCoefficient(from currency.Token, to currency.Token) float64 {
+func (c *Converter) getCoefficient(from, to currency.Token) float64 {
 	var coefficient float64 = 1
 
-	switch c.baseCurrency {
+	switch c.baseCurrency { //nolint:exhaustive // by design
 	case from:
 		coefficient *= c.data[to]
 	case to:
@@ -78,7 +78,7 @@ func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token
 		cfg.BaseCurrency, strings.Join(currency.Supported[:], "%2C"))
 
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	req.Header.Set("apikey", cfg.Token)
 	if err != nil {
 		return nil, err
@@ -119,6 +119,7 @@ func parseValues(baseCurrency string, data map[string]float64) (map[currency.Tok
 
 				continue
 			}
+
 			return nil, util.ErrUnsupported
 		}
 

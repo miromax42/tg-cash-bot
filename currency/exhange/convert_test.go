@@ -119,6 +119,7 @@ func (s *ExchangeSuite) TestConverter_Convert() {
 			gotAmount, err := s.c.Convert(context.Background(), tt.arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Convert() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if fmt.Sprintf("%.4f", gotAmount) != fmt.Sprintf("%.4f", tt.wantAmount) {

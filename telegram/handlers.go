@@ -22,7 +22,8 @@ func StartHelp(c tele.Context) error {
 
 	b.WriteString("available commands:\n")
 	b.WriteString("/exp 99 Fun -- adds expense 99 of Fun category\n")
-	b.WriteString("/all day -- show expenses for last day,\n\t examples of time modificators [day, week, month, year, 2h30m]\n")
+	b.WriteString("/all day -- show expenses for last day,\n")
+	b.WriteString("\t examples of time modificators [day, week, month, year, 2h30m]\n")
 
 	return c.Send(b.String())
 }
@@ -36,8 +37,7 @@ type CreateExpenseReq struct {
 func (s *Server) CreateExpense(c tele.Context) error {
 	req, err := NewCreateExpenseReq(c)
 	if err != nil {
-		tools.SendError(c, tools.ErrInvalidCreateExpense)
-		return err
+		return tools.SendError(c, tools.ErrInvalidCreateExpense)
 	}
 
 	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
@@ -46,8 +46,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		To:     s.exchange.Base(),
 	})
 	if err != nil {
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	databaseReq := repo.CreateExpenseReq{
@@ -59,12 +58,10 @@ func (s *Server) CreateExpense(c tele.Context) error {
 	resp, err := s.expense.CreateExpense(context.TODO(), databaseReq)
 	if err != nil {
 		if errors.Is(err, util.ErrLimitExceed) {
-			tools.SendError(c, tools.ErrLimitBlockExpense)
-			return nil
+			return tools.SendError(c, tools.ErrLimitBlockExpense)
 		}
 
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	return c.Send(CreateExpenseAnswer(resp, req.Amount))
@@ -78,8 +75,7 @@ type ListUserExpenseReq struct {
 func (s *Server) ListExpenses(c tele.Context) error {
 	req, err := NewListUserExpenseReq(c)
 	if err != nil {
-		tools.SendError(c, tools.ErrInvalidListExpense)
-		return err
+		return tools.SendError(c, tools.ErrInvalidListExpense)
 	}
 
 	databaseReq := repo.ListUserExpenseReq{
@@ -89,8 +85,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 
 	resp, err := s.expense.ListUserExpense(context.TODO(), databaseReq)
 	if err != nil {
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	multiplier, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
@@ -99,8 +94,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 	})
 	if err != nil {
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	return c.Send(ListExpensesAnswer(resp, multiplier))
@@ -119,13 +113,11 @@ func (s *Server) SetCurrency(c tele.Context) error {
 
 	req, err := NewPersonalSettingsReq(c)
 	if err != nil {
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	if err := s.userSettings.Set(context.TODO(), req); err != nil {
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	return c.Send("currency set to " + c.Data())
@@ -138,8 +130,7 @@ type SetLimitReq struct {
 func (s *Server) SetLimit(c tele.Context) error {
 	req, err := NewSetLimitRequest(c)
 	if err != nil {
-		tools.SendError(c, tools.ErrInvalidSetLimit)
-		return err
+		return tools.SendError(c, tools.ErrInvalidSetLimit)
 	}
 
 	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
@@ -147,6 +138,9 @@ func (s *Server) SetLimit(c tele.Context) error {
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
 	})
+	if err != nil {
+		return tools.SendError(c, tools.ErrInvalidSetLimit)
+	}
 
 	repoReq := repo.PersonalSettingsReq{
 		UserID: c.Sender().ID,
@@ -155,12 +149,10 @@ func (s *Server) SetLimit(c tele.Context) error {
 
 	if err = s.userSettings.Set(context.TODO(), repoReq); err != nil {
 		if errors.Is(err, util.ErrLimitExceed) {
-			tools.SendError(c, tools.ErrSetLimitBlockedByExpenses)
-			return nil
+			return tools.SendError(c, tools.ErrSetLimitBlockedByExpenses)
 		}
 
-		tools.SendError(c, tools.ErrInternal)
-		return err
+		return tools.SendError(c, tools.ErrInternal)
 	}
 
 	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))

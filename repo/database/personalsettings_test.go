@@ -54,6 +54,7 @@ func (s *PostgresTestSuite) TestGet() {
 			got, err := settings.Get(context.Background(), tt.arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -166,6 +167,7 @@ func (s *PostgresTestSuite) TestSet() {
 			err := settings.Set(context.Background(), arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(get(arg.UserID), tt.want) {

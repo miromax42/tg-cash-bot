@@ -50,12 +50,12 @@ func (s *PostgresTestSuite) applyFixture(filePath string, values map[string]inte
 	require.NoError(s.T(), fixtures.Load())
 }
 
-func getDB(t *testing.T) (*ent.Client, string) {
+func getDB(t *testing.T) (db *ent.Client, url string) {
 	container, err := db_container_test.NewTestDatabase()
 	require.NoError(t, err)
 	connectionString := container.ConnectionString()
 
-	db, err := ent.Open("postgres", connectionString)
+	db, err = ent.Open("postgres", connectionString)
 	require.NoError(t, err)
 
 	err = db.Schema.Create(context.Background())
@@ -66,8 +66,10 @@ func getDB(t *testing.T) (*ent.Client, string) {
 
 func generator() func() int64 {
 	var inc int64
+
 	return func() int64 {
 		inc++
+
 		return inc
 	}
 }

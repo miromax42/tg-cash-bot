@@ -16,7 +16,7 @@ const (
 	TokenUSD
 )
 
-var Supported = [...]string{
+var Supported = [...]string{ //nolint:gochecknoglobals // by design
 	"RUB",
 	"CNY",
 	"EUR",

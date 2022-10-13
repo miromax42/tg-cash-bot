@@ -13,8 +13,7 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		settings, err := s.userSettings.Get(context.TODO(), c.Sender().ID)
 		if err != nil || settings == nil {
-			tools.SendError(c, tools.ErrInternal)
-			return err
+			return tools.SendError(c, tools.ErrInternal)
 		}
 
 		c.Set(SettingsKey.String(), settings)

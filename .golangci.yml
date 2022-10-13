@@ -23,6 +23,8 @@ linters-settings:
       - diagnostic
       - style
       - opinionated
+    disabled-checks:
+      - whyNoLint
   nakedret:
     max-func-lines: 20
   goimports:
@@ -90,6 +92,9 @@ issues:
       linters:
         - dogsled
         - gomnd
+    - path: generate.go
+      linters:
+        - lll
 
 run:
   timeout: 5m

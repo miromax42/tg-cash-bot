@@ -12,20 +12,29 @@ import (
 )
 
 func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
-	if len(c.Args()) != 2 {
+	const (
+		awaitedArgs = 2
+
+		minAmount      = 0
+		maxAmount      = 10000
+		minLenCategory = 0
+		maxLenCategory = 100
+	)
+
+	if len(c.Args()) != awaitedArgs {
 		return CreateExpenseReq{}, util.ErrBadFormat
 	}
 
-	amount, err := strconv.ParseFloat(c.Args()[0], 64)
+	amount, err := strconv.ParseFloat(c.Args()[0], 64) //nolint:gomnd
 	if err != nil {
 		return CreateExpenseReq{}, util.ErrBadFormat
 	}
 	category := c.Args()[1]
 
-	if !(0 < amount && amount < 10000) {
+	if !(minAmount < amount && amount < maxAmount) {
 		return CreateExpenseReq{}, util.ErrBadFormat
 	}
-	if !(0 < len(category) && len(category) <= 100) {
+	if !(minLenCategory < len(category) && len(category) <= maxLenCategory) {
 		return CreateExpenseReq{}, util.ErrBadFormat
 	}
 
@@ -37,7 +46,15 @@ func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
 }
 
 func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
-	if len(c.Args()) != 1 {
+	const (
+		awaitedArgs = 1
+
+		hoursInDay   = 24
+		hoursInWeek  = hoursInDay * 7
+		hoursInMonth = hoursInWeek * 30
+		hoursInYear  = 8760
+	)
+	if len(c.Args()) != awaitedArgs {
 		return ListUserExpenseReq{}, util.ErrBadFormat
 	}
 
@@ -47,13 +64,13 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 	if err != nil {
 		switch durationToken {
 		case "day":
-			duration = 24 * time.Hour
+			duration = hoursInDay * time.Hour
 		case "week":
-			duration = 7 * 24 * time.Hour
+			duration = hoursInWeek * time.Hour
 		case "month":
-			duration = 30 * 24 * time.Hour
+			duration = hoursInMonth * time.Hour
 		case "year":
-			duration = 8760 * time.Hour
+			duration = hoursInYear * time.Hour
 		default:
 			return ListUserExpenseReq{}, util.ErrBadFormat
 		}
@@ -78,7 +95,8 @@ func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 }
 
 func NewSetLimitRequest(c tele.Context) (SetLimitReq, error) {
-	limit, err := strconv.ParseFloat(c.Data(), 64)
+	limit, err := strconv.ParseFloat(c.Data(), 64) //nolint:gomnd
+
 	return SetLimitReq{
 		Limit: limit,
 	}, err
