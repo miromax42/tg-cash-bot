@@ -1,9 +1,14 @@
 version: '3'
 
+includes:
+  ci: ./.gitlab-ci/Taskfile.yml
+
 env:
   ENV: test
 
+
 dotenv: ['.env', '{{.ENV}}.env']
+
 
 vars:
   MIGRATE_DIR: file://ent/migrate/migrations
@@ -11,14 +16,6 @@ vars:
 
 tasks:
   gen: go generate ./...
-  test-full:
-    cmds:
-      - go test --coverprofile=coverage.out ./... -short
-      - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
-  build:
-    cmds:
-      - task: gen
-      - go build -o ./bin/bot ./...
   test:
     cmds:
       - go test --coverprofile=coverage.out ./... -short
@@ -26,7 +23,6 @@ tasks:
 
 
   run: go run ./...
-
 
   lint: golangci-lint run ./...
 
