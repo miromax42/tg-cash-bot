@@ -1,0 +1,124 @@
+output:
+  path-prefix: ""
+  sort-results: true
+  format: tab
+  print-issued-lines: false
+  print-linter-name: true
+  uniq-by-line: false
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    fieldalignment: true
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  lll:
+    line-length: 120
+  gocritic:
+    enabled-tags:
+      - performance
+      - diagnostic
+      - style
+      - opinionated
+
+  nakedret:
+    max-func-lines: 30
+  goimports:
+    local-prefixes: git.dev.cloud.mts.ru
+
+linters:
+  enable:
+    - asciicheck # check that your code does not contain non-ASCII identifiers
+    - bodyclose # checks whether res.Body is correctly closed
+    - containedctx # detects struct contained context.Context field
+    - contextcheck # check whether the function uses a non-inherited context
+    - decorder # check declaration order and count of types, constants, variables and functions
+    - dogsled # checks assignments with too many blank identifiers (e.g. x, , , _, := f())
+    - dupl # tool for code clone detection
+    - durationcheck # check for two durations multiplied together
+    - errchkjson # checks types passed to the json encoding functions
+    - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
+    - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
+    - execinquery # execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds
+    - exhaustive # check exhaustiveness of enum switch statements and map literals
+    - exhaustruct # Checks if all structure fields are initialized
+    - exportloopref # checks for pointers to enclosing loop variables
+    - forbidigo # forbid regexp: default pattern of ^(fmt\.Print.*|print|println)$ is used to eliminate debug statements
+    - forcetypeassert # finds forced type assertions
+    - funlen # tool for detection of long functions
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit # computes and checks the cognitive complexity of functions
+    - goconst
+    - gocritic
+    - goerr113 # check the errors handling expressions
+    - gofmt
+    - goimports
+    - gomnd # detect magic numbers
+    - gosec
+    - grouper # analyzer to analyze expression groups.
+    - lll
+    - makezero # find slice declarations that are not initialized with zero length and are later used with append
+    - nakedret # naked returns in functions greater than a specified function length
+    - nilerr # finds the code that returns nil even if it checks that the error is not nil.
+    - nilnil
+    - nlreturn
+    - noctx # finds sending http request without context.Context
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+
+issues:
+  exclude:
+    - var-naming
+    - tableName
+    - language
+  exclude-rules:
+    - path: pkg/adapters/jira/client/client.go
+      text: "G402" # G402: TLS InsecureSkipVerify set true.
+      linters:
+        - gosec
+    - path: pkg/adapters/siebel/client.go
+      text: "G402" # G402: TLS InsecureSkipVerify set true.
+      linters:
+        - gosec
+    - path: pkg/adapters/hub/client.go
+      text: "G101" # G101: Potential hardcoded credentials.
+      linters:
+        - gosec
+    - path: pkg/infra/config/config.go
+      linters:
+        - exhaustruct
+        - gomnd
+    - path: pkg/components/service/report/excel/models.go
+      linters:
+        - gomnd
+    - path: pkg/components/service/permissions_list.go
+      linters:
+        - gochecknoglobals
+    - path: test.*\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - dogsled
+        - gomnd
+        - gochecknoglobals
+        - exhaustruct
+        - funlen
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - ent
+    - mocks
+  modules-download-mode: mod
+  allow-parallel-runners: true
