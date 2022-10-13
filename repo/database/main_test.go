@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 
 	"entgo.io/ent/dialect/sql"
@@ -51,11 +53,26 @@ func (s *PostgresTestSuite) applyFixture(filePath string, values map[string]inte
 }
 
 func getDB(t *testing.T) (db *ent.Client, url string) {
-	container, err := db_container_test.NewTestDatabase()
-	require.NoError(t, err)
-	connectionString := container.ConnectionString()
+	var connectionString string
+	if _, ok := os.LookupEnv("CI_PROJECT_ID"); ok {
+		user, ok := os.LookupEnv("POSTGRES_USER")
+		require.True(t, ok)
 
-	db, err = ent.Open("postgres", connectionString)
+		password, ok := os.LookupEnv("POSTGRES_PASSWORD")
+		require.True(t, ok)
+
+		host, ok := os.LookupEnv("POSTGRES_HOSTNAME")
+		require.True(t, ok)
+
+		connectionString = fmt.Sprintf("postgresql://%s:%s@%s:5432/postgres?sslmode=disable", user, password, host)
+
+	} else {
+		container, err := db_container_test.NewTestDatabase()
+		require.NoError(t, err)
+		connectionString = container.ConnectionString()
+	}
+
+	db, err := ent.Open("postgres", connectionString)
 	require.NoError(t, err)
 
 	err = db.Schema.Create(context.Background())
