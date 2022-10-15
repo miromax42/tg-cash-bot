@@ -40,6 +40,17 @@
   > Интеграционные табл-тесты на постгрес в докере. Тест поднимает постгрес сам (`testcontainers`),
   > заполнение базы для теста (`testfixtures`)
 
+## Быстрый старт
+1. Установить taskfile
+  ```bash 
+  go install github.com/go-task/task/v3/cmd/task@latest
+  ```
+2. Запуск генераторов, контейнера с БД и приложения
+  ```bash 
+  task start-new
+  ```
+3. **Profit!**
+
 ## Конфигурация
 * `TLG_TOKEN` - токен телеграм бота
 * `EXCHANGE_TOKEN`- токен для [сервиса получения курсов валют](https://apilayer.com/marketplace/fixer-api)

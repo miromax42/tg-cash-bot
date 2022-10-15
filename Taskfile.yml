@@ -15,7 +15,14 @@ vars:
 
 
 tasks:
-  gen: go generate ./...
+  gen:
+    generates:
+      - mocks/*.go
+      - ent/**/*.go
+    sources:
+      - ./**/*.go
+    cmds:
+      - go generate ./...
 
   test: go test --coverprofile=coverage.out ./... -short
 
@@ -36,22 +43,24 @@ tasks:
     --dir {{.MIGRATE_DIR}}
     --url {{.DB_URL}}
 
-  mock:
+  precommit:
     cmds:
-      - mockery --all --keeptree --dir ./repo
-      - mockery --all --keeptree --dir ./currency
-      - mockery --all --keeptree --dir ./currency
-      - mockery --all --keeptree --dir ./telegram/tools
-      - mockery --all --keeptree --dir ./util
+      - task: gen
+      - task: test
+      - task: lint
 
-  docker:
+  docker-prepare:
     cmds:
       - docker stop tele-postgres
       - docker rm tele-postgres
-      - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
     ignore_error: true
 
-  precommit:
+  docker:
+    deps: [docker-prepare]
     cmds:
-      - task: test
-      - task: lint
+      - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
+
+  start-new:
+    deps: [docker,gen]
+    cmds:
+      - cmd: run
