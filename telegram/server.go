@@ -1,9 +1,11 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -20,6 +22,7 @@ type Server struct {
 }
 
 func NewServer(
+	ctx context.Context,
 	cfg util.ConfigTelegram,
 	log util.Logger,
 	expense repo.Expense,
@@ -29,8 +32,8 @@ func NewServer(
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second}, //nolint:gomnd
-		OnError: func(err error, context tele.Context) {
-			log.Errorf("%+v", err)
+		OnError: func(err error, c tele.Context) {
+			log.Errorf("%+v", errors.WithContextTags(err, requestContext(c)))
 		},
 	}
 
@@ -47,12 +50,13 @@ func NewServer(
 		exchange:     exchange,
 	}
 
-	srv.setupRoutes()
+	srv.setupRoutes(ctx)
 
 	return srv, nil
 }
 
-func (s *Server) setupRoutes() {
+func (s *Server) setupRoutes(ctx context.Context) {
+	s.bot.Use(s.WithContext(ctx))
 	s.bot.Use(s.Authentication)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {

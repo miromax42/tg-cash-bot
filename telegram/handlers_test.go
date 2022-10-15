@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -68,6 +69,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 				c.On("Get", SettingsKey.String()).Return(&repo.PersonalSettingsResp{
 					Currency: currency.TokenRUB,
 				})
+				c.On("Get", RequestContextKey.String()).Return(context.Background())
 				c.On("Sender").Return(&telebot.User{ID: userID})
 				c.On("Args").Return([]string{amount, category})
 				c.On("Send", mock.AnythingOfType("string")).Return(nil)
@@ -110,6 +112,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 				c.On("Get", SettingsKey.String()).Return(&repo.PersonalSettingsResp{
 					Currency: currency.TokenRUB,
 				})
+				c.On("Get", RequestContextKey.String()).Return(context.Background())
 				c.On("Sender").Return(&telebot.User{ID: userID})
 				c.On("Args").Return([]string{amount, category})
 				c.On("Send",
@@ -190,6 +193,7 @@ func (s *HandlersTestSuite) TestSetLimit() {
 				c.On("Get", SettingsKey.String()).Return(&repo.PersonalSettingsResp{
 					Currency: currency.TokenRUB,
 				})
+				c.On("Get", RequestContextKey.String()).Return(context.Background())
 				c.On("Sender").Return(&telebot.User{ID: userID})
 				c.On("Data").Return(limit)
 				c.On("Send",

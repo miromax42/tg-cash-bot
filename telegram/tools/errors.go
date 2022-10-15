@@ -63,7 +63,7 @@ func (e UserError) with(internal error) UserError {
 func SendError(err error, c tele.Context, e UserError) error {
 	terr := c.Send(e.with(err).Error())
 	if terr != nil {
-		err = errors.Wrapf(terr, "during handling: %v", err)
+		err = errors.CombineErrors(err, errors.WithHint(terr, "during handling main error"))
 	} else if !e.isNotExpected {
 		return nil
 	}

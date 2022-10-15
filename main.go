@@ -63,7 +63,7 @@ func main() { //nolint:funlen // main func
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
 
-		srv, err = telegram.NewServer(cfg.Telegram, log, expense, personalSettings, exchange)
+		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, expense, personalSettings, exchange)
 		if err != nil {
 			return err
 		}

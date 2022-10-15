@@ -22,7 +22,7 @@ func WithTx(ctx context.Context, client *ent.Client, fn func(tx *ent.Tx) error) 
 
 	if err := fn(tx); err != nil {
 		if rerr := tx.Rollback(); rerr != nil {
-			err = errors.WithHintf(err, "rolling back tx: %v", rerr)
+			err = errors.CombineErrors(err, errors.Wrapf(rerr, "rolling back tx"))
 		}
 
 		return errors.Wrapf(err, "during tx")

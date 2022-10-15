@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -39,7 +38,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		return tools.SendError(err, c, tools.ErrInvalidCreateExpense)
 	}
 
-	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: req.Amount,
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
@@ -54,7 +53,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		Category: req.Category,
 	}
 
-	resp, err := s.expense.CreateExpense(context.TODO(), databaseReq)
+	resp, err := s.expense.CreateExpense(requestContext(c), databaseReq)
 	if err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
 			return tools.SendError(err, c, tools.ErrLimitBlockExpense)
@@ -82,12 +81,12 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		FromTime: req.FromTime,
 	}
 
-	resp, err := s.expense.ListUserExpense(context.TODO(), databaseReq)
+	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
 	if err != nil {
 		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
-	multiplier, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: oneCoin,
 		From:   s.exchange.Base(),
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
@@ -115,7 +114,7 @@ func (s *Server) SetCurrency(c tele.Context) error {
 		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
-	if err := s.userSettings.Set(context.TODO(), req); err != nil {
+	if err := s.userSettings.Set(requestContext(c), req); err != nil {
 		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
@@ -132,7 +131,7 @@ func (s *Server) SetLimit(c tele.Context) error {
 		return tools.SendError(err, c, tools.ErrInvalidSetLimit)
 	}
 
-	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: req.Limit,
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
@@ -146,7 +145,7 @@ func (s *Server) SetLimit(c tele.Context) error {
 		Limit:  &amount,
 	}
 
-	if err = s.userSettings.Set(context.TODO(), repoReq); err != nil {
+	if err = s.userSettings.Set(requestContext(c), repoReq); err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
 			return tools.SendError(err, c, tools.ErrSetLimitBlockedByExpenses)
 		}
