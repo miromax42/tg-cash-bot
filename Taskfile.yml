@@ -16,11 +16,11 @@ vars:
 
 tasks:
   gen: go generate ./...
+
   test:
     cmds:
       - go test --coverprofile=coverage.out ./... -short
       - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
-
 
   run: go run ./...
 
@@ -46,3 +46,10 @@ tasks:
       - mockery --all --keeptree --dir ./currency
       - mockery --all --keeptree --dir ./telegram/tools
       - mockery --all --keeptree --dir ./util
+
+  docker:
+    cmds:
+      - docker stop tele-postgres
+      - docker rm tele-postgres
+      - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
+    ignore_error: true

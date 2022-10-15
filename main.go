@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/signal"
 	"syscall"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/cockroachdb/errors"
 	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -41,20 +41,20 @@ func main() { //nolint:funlen // main func
 
 	init, initCtx := errgroup.WithContext(mainCtx)
 
-	init.Go(func() error {
-		return migrateDB(initCtx, cfg.DB)
+	init.Go(func() (err error) {
+		db, err = migrateDB(initCtx, cfg.DB)
+
+		return errors.Wrap(err, "db")
 	})
 
 	init.Go(func() (err error) {
-		if exchange, err = exhange.New(initCtx, cfg.Exchange); err != nil {
-			return fmt.Errorf("init exchange: %w", err)
-		}
+		exchange, err = exhange.New(initCtx, cfg.Exchange)
 
-		return nil
+		return errors.Wrap(err, "exchange")
 	})
 
 	if err := init.Wait(); err != nil {
-		log.Panicf("exit reason: %s \n", err)
+		log.Panicf(errors.Wrap(err, "init").Error())
 	}
 
 	work, workCtx := errgroup.WithContext(mainCtx)
@@ -62,6 +62,7 @@ func main() { //nolint:funlen // main func
 	work.Go(func() (err error) {
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
+
 		srv, err = telegram.NewServer(cfg.Telegram, log, expense, personalSettings, exchange)
 		if err != nil {
 			return err
@@ -78,13 +79,8 @@ func main() { //nolint:funlen // main func
 
 		<-workCtx.Done()
 		srv.Stop()
-		if err := db.Close(); err != nil {
-			return fmt.Errorf("close db: %w", err)
-		}
 
-		log.Info("bot stopped")
-
-		return nil
+		return errors.Wrap(db.Close(), "close db")
 	})
 
 	if err := work.Wait(); err != nil {
@@ -94,17 +90,21 @@ func main() { //nolint:funlen // main func
 	}
 }
 
-func migrateDB(ctx context.Context, cfg util.ConfigDB) error {
+func migrateDB(ctx context.Context, cfg util.ConfigDB) (*ent.Client, error) {
 	db, err := ent.Open("postgres", cfg.URL)
 	if err != nil {
-		return fmt.Errorf("failed opening connection to sqlite: %w", err)
+		return nil, errors.Wrap(err, "ent connect")
 	}
 
 	if err := db.Schema.Create(ctx); err != nil {
-		return fmt.Errorf("failed creating schema resources: %w", err)
+		return nil, errors.Wrap(err, "migrate")
 	}
 
-	return initFixtures("postgres", cfg)
+	if err := initFixtures("postgres", cfg); err != nil {
+		return nil, errors.Wrap(err, "fixtures")
+	}
+
+	return db, nil
 }
 
 func initFixtures(dialect string, cfg util.ConfigDB) error {
