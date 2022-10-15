@@ -21,7 +21,7 @@ tasks:
   test:
     deps: [gen,install-test]
     cmds:
-      - go test --coverprofile=coverage.out -json ./... | gotestfmt
+      - go test --coverprofile=coverage.out -json ./... | gotestfmt -hide empty-packages
       - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
 
   build:
