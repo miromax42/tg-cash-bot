@@ -16,10 +16,12 @@ tasks:
 
   gen: go generate ./...
 
+  install-test: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+
   test:
-    deps: [gen]
+    deps: [gen,install-test]
     cmds:
-      - go test --coverprofile=coverage.out ./...
+      - go test --coverprofile=coverage.out -json ./... | gotestfmt
       - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
 
   build:
