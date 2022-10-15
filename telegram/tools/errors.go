@@ -3,7 +3,7 @@ package tools
 import (
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	tele "gopkg.in/telebot.v3"
 )
 
