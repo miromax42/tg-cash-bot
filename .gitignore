@@ -1,7 +1,7 @@
 test.env
 *.db
 
-### ent
+### gen
 !ent/migrate/migrations
 !ent/fixtures
 !ent/migrate/main.go
@@ -9,8 +9,12 @@ test.env
 !ent/entc.go
 !ent/generate.go
 ent/**
+
+mocks/**.go
+
 ### Taskfile
 .task/
+
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json
