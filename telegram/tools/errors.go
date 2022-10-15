@@ -3,47 +3,48 @@ package tools
 import (
 	"strings"
 
+	"github.com/pkg/errors"
 	tele "gopkg.in/telebot.v3"
 )
 
 var (
-	ErrInvalidCreateExpense = TelegramError{
+	ErrInvalidCreateExpense = UserError{
 		Title:  "invalid request",
 		Detail: "use format [/exp 100 Food]; where 100 is price and number, Food is any string",
 	}
-	ErrInternal = TelegramError{
+	ErrInternal = UserError{
 		Title:  "internal error",
 		Detail: "bot eaten too much fastfood",
 	}
-	ErrInvalidListExpense = TelegramError{
+	ErrInvalidListExpense = UserError{
 		Title:  "invalid request",
 		Detail: "use format [/all day]; you can use day, month, week, year or 2h30m",
 	}
 
-	ErrInvalidSetLimit = TelegramError{
+	ErrInvalidSetLimit = UserError{
 		Title:  "invalid request",
 		Detail: "use format [/limit <float>]",
 	}
 
-	ErrLimitBlockExpense = TelegramError{
+	ErrLimitBlockExpense = UserError{
 		Title:  "inconsistent request",
 		Detail: "cant do operation because of limit",
 	}
 
-	ErrSetLimitBlockedByExpenses = TelegramError{
+	ErrSetLimitBlockedByExpenses = UserError{
 		Title:      "inconsistent request",
 		Detail:     "cant set limit less then sum",
 		isExpected: true,
 	}
 )
 
-type TelegramError struct {
+type UserError struct {
 	Title      string
 	Detail     string
 	isExpected bool
 }
 
-func (e TelegramError) Error() string {
+func (e UserError) Error() string {
 	b := strings.Builder{}
 
 	b.WriteString("Error happened :(\n")
@@ -52,13 +53,13 @@ func (e TelegramError) Error() string {
 	return b.String()
 }
 
-// SendError default value of returnErr=true
-func SendError(c tele.Context, e TelegramError) error {
-	_ = c.Send(e.Error())
-
-	if e.isExpected {
+func SendError(err error, c tele.Context, e UserError) error {
+	terr := c.Send(e.Error())
+	if terr != nil {
+		err = errors.Wrapf(terr, "during handling: %v", err)
+	} else if e.isExpected {
 		return nil
 	}
 
-	return e
+	return err
 }

@@ -2,9 +2,8 @@ package currency
 
 import (
 	"database/sql/driver"
-	"fmt"
 
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
+	"github.com/cockroachdb/errors"
 )
 
 type Token int
@@ -30,13 +29,13 @@ func Parse(cur string) (Token, error) {
 		}
 	}
 
-	return 0, util.ErrUnsupported
+	return 0, ErrNotSupport
 }
 
 func MustParse(cur string) Token {
 	t, err := Parse(cur)
 	if err != nil {
-		panic(fmt.Errorf("corventing %q: %w", cur, err))
+		panic(errors.Wrapf(err, "converting %q", cur))
 	}
 
 	return t

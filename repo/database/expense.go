@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
+
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent/expense"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -28,7 +30,7 @@ func (e Expense) CreateExpense(
 		settings := NewPersonalSettings(e.db)
 		userSettings, err := settings.Get(ctx, req.UserID)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "get user settings")
 		}
 
 		sum, err := e.allUserExpense(ctx, repo.ListUserExpenseReq{
@@ -36,11 +38,11 @@ func (e Expense) CreateExpense(
 			FromTime: util.TimeMonthAgo(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "get all user expenses")
 		}
 
 		if sum+req.Amount > userSettings.Limit && userSettings.Limit != 0 {
-			return util.ErrLimitExceed
+			return errors.WithHint(repo.ErrLimitExceed, "attempt to spend more then limit")
 		}
 
 		model, err = e.db.Expense.Create().
@@ -49,7 +51,7 @@ func (e Expense) CreateExpense(
 			SetCategory(req.Category).
 			Save(ctx)
 
-		return err
+		return errors.Wrap(err, "create expense")
 	}); err != nil {
 		return nil, err
 	}
@@ -69,7 +71,7 @@ func (e Expense) ListUserExpense(ctx context.Context, req repo.ListUserExpenseRe
 		GroupBy(expense.FieldCategory).
 		Aggregate(ent.Sum(expense.FieldAmount)).
 		Scan(ctx, &expenses); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "list expenses")
 	}
 
 	return expenses, nil
@@ -88,12 +90,8 @@ func (e Expense) allUserExpense(ctx context.Context, req repo.ListUserExpenseReq
 		GroupBy(expense.FieldCreatedBy).
 		Aggregate(ent.Sum(expense.FieldAmount)).
 		Scan(ctx, &result); err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "list expenses")
 	}
 
-	if len(result) == 0 {
-		return 0, nil
-	}
-
-	return result[0].Sum, nil
+	return firstOrZero(result).Sum, nil
 }

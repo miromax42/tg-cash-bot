@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/cockroachdb/errors"
+
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
@@ -20,7 +22,7 @@ type Converter struct {
 func New(ctx context.Context, cfg util.ConfigExchange) (*Converter, error) {
 	data, err := getValues(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("maybe token exceed: %w", err)
+		return nil, errors.Wrap(err, "new")
 	}
 
 	return &Converter{
@@ -37,13 +39,10 @@ func (c *Converter) Convert(_ context.Context, req currency.ConvertReq) (amount 
 	_, ok1 := c.data[req.To]
 	_, ok2 := c.data[req.From]
 	if !ok1 || !ok2 {
-		return 0, util.ErrUnsupported
+		return 0, errors.Wrapf(currency.ErrNotSupport, "one of [%q|%q]", req.To, req.From)
 	}
 
 	coefficient := c.getCoefficient(req.From, req.To)
-	if err != nil {
-		return 0, err
-	}
 
 	return coefficient * req.Amount, nil
 }
@@ -79,14 +78,15 @@ func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token
 
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
-	req.Header.Set("apikey", cfg.Token)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "create req")
 	}
+
+	req.Header.Set("apikey", cfg.Token)
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "make req")
 	}
 	if res.Body != nil {
 		defer res.Body.Close()
@@ -94,15 +94,15 @@ func getValues(ctx context.Context, cfg util.ConfigExchange) (map[currency.Token
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "read body")
 	}
 
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unmarshal struct")
 	}
 	if !response.Success {
-		return nil, util.ErrBadResponse
+		return nil, errors.WithHint(currency.ErrNotSuccess, "maybe token exceed")
 	}
 
 	return parseValues(response.Source, response.Quotes)
@@ -120,7 +120,7 @@ func parseValues(baseCurrency string, data map[string]float64) (map[currency.Tok
 				continue
 			}
 
-			return nil, util.ErrUnsupported
+			return nil, errors.Wrapf(currency.ErrNotSupport, "value=%q", key)
 		}
 
 		m[currency.Token(i)] = data[key]

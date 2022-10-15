@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -86,7 +87,7 @@ func (s *PostgresTestSuite) TestSet() {
 		name    string
 		prepare func() repo.PersonalSettingsReq
 		want    *repo.PersonalSettingsResp
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			"change existing",
@@ -97,7 +98,7 @@ func (s *PostgresTestSuite) TestSet() {
 				}
 			},
 			&repo.PersonalSettingsResp{Currency: currency.TokenEUR},
-			false,
+			assert.NoError,
 		},
 		{
 			"set existing without currency",
@@ -110,7 +111,7 @@ func (s *PostgresTestSuite) TestSet() {
 			&repo.PersonalSettingsResp{
 				Currency: currency.TokenCNY,
 			},
-			false,
+			assert.NoError,
 		},
 		{
 			"set new",
@@ -121,7 +122,7 @@ func (s *PostgresTestSuite) TestSet() {
 				}
 			},
 			&repo.PersonalSettingsResp{Currency: currency.TokenEUR},
-			false,
+			assert.NoError,
 		},
 		{
 			"set new with default currency",
@@ -132,7 +133,7 @@ func (s *PostgresTestSuite) TestSet() {
 				}
 			},
 			&repo.PersonalSettingsResp{Currency: currency.TokenRUB},
-			false,
+			assert.NoError,
 		},
 		{
 			"set above limit",
@@ -149,7 +150,7 @@ func (s *PostgresTestSuite) TestSet() {
 				Currency: currency.TokenRUB,
 				Limit:    1,
 			},
-			true,
+			assert.Error,
 		},
 	}
 	for _, tt := range tests {
@@ -165,14 +166,9 @@ func (s *PostgresTestSuite) TestSet() {
 
 			arg := tt.prepare()
 			err := settings.Set(context.Background(), arg)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 
-				return
-			}
-			if !reflect.DeepEqual(get(arg.UserID), tt.want) {
-				t.Errorf("Get() got = %v, want %v", get(arg.UserID), tt.want)
-			}
+			tt.wantErr(t, err)
+			require.EqualValues(t, get(arg.UserID), tt.want)
 		})
 	}
 }

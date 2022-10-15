@@ -4,11 +4,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
+)
+
+var (
+	ErrArgsCount  = errors.New("not supported args count")
+	ErrValidation = errors.New("not valid")
 )
 
 func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
@@ -22,20 +27,20 @@ func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
 	)
 
 	if len(c.Args()) != awaitedArgs {
-		return CreateExpenseReq{}, util.ErrBadFormat
+		return CreateExpenseReq{}, ErrArgsCount
 	}
 
 	amount, err := strconv.ParseFloat(c.Args()[0], 64) //nolint:gomnd
 	if err != nil {
-		return CreateExpenseReq{}, util.ErrBadFormat
+		return CreateExpenseReq{}, errors.Wrapf(err, "parse to float %q", c.Args()[0])
 	}
 	category := c.Args()[1]
 
 	if !(minAmount < amount && amount < maxAmount) {
-		return CreateExpenseReq{}, util.ErrBadFormat
+		return CreateExpenseReq{}, errors.WithHint(ErrValidation, "amount")
 	}
 	if !(minLenCategory < len(category) && len(category) <= maxLenCategory) {
-		return CreateExpenseReq{}, util.ErrBadFormat
+		return CreateExpenseReq{}, errors.WithHint(ErrValidation, "category")
 	}
 
 	return CreateExpenseReq{
@@ -55,7 +60,7 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 		hoursInYear  = 8760
 	)
 	if len(c.Args()) != awaitedArgs {
-		return ListUserExpenseReq{}, util.ErrBadFormat
+		return ListUserExpenseReq{}, ErrArgsCount
 	}
 
 	durationToken := c.Args()[0]
@@ -72,7 +77,7 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 		case "year":
 			duration = hoursInYear * time.Hour
 		default:
-			return ListUserExpenseReq{}, util.ErrBadFormat
+			return ListUserExpenseReq{}, errors.WithHint(ErrValidation, "duration")
 		}
 	}
 
@@ -85,7 +90,7 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 	newCurrency, err := currency.Parse(c.Data())
 	if err != nil {
-		return repo.PersonalSettingsReq{}, err
+		return repo.PersonalSettingsReq{}, errors.Wrap(err, "parse to currency")
 	}
 
 	return repo.PersonalSettingsReq{
@@ -96,6 +101,7 @@ func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 
 func NewSetLimitRequest(c tele.Context) (SetLimitReq, error) {
 	limit, err := strconv.ParseFloat(c.Data(), 64) //nolint:gomnd
+	err = errors.Wrapf(err, "parse to float %q", c.Data())
 
 	return SetLimitReq{
 		Limit: limit,

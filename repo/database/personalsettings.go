@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/cockroachdb/errors"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -27,7 +28,7 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 			return repo.DefaultPersonalSettingsResp(), nil
 		}
 
-		return nil, err
+		return nil, errors.Wrap(err, "get")
 	}
 
 	return &repo.PersonalSettingsResp{
@@ -44,13 +45,13 @@ func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq
 			FromTime: util.TimeMonthAgo(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "get sum expenses")
 		}
 		if req.Limit != nil && sum > *req.Limit {
-			return util.ErrLimitExceed
+			return errors.WithHint(repo.ErrLimitExceed, "current sum is bigger than chosen limit")
 		}
 
-		return p.db.PersonalSettings.Create().
+		return errors.Wrap(p.db.PersonalSettings.Create().
 			SetID(req.UserID).
 			SetNillableCurrency(req.Currency).
 			SetNillableLimit(req.Limit).
@@ -58,6 +59,6 @@ func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq
 				sql.ConflictColumns("id"),
 			).
 			UpdateNewValues().
-			Exec(ctx)
+			Exec(ctx), "upsert settings")
 	})
 }
