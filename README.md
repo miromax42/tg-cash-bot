@@ -41,6 +41,15 @@
   > заполнение базы для теста (`testfixtures`)
 
 ## Быстрый старт
+0. Создать фаил `test.env` в корне проекта с содержимым:
+  > `DB_TEST_USER_ID` можно посмотреть командой в боте `/ping`
+  ```text
+  TLG_TOKEN=5418307428:AAGaauK4oJwKCLKtwoxN7be8p2VKiVtBvus
+  EXCHANGE_TOKEN=myjdYvKQjtY8oQ6LXtZhKYEuTP8t40o0
+  EXCHANGE_BASE_CURRENCY=RUB
+  DB_URL=postgres://postgres:pass@localhost:5432/test?sslmode=disable
+  DB_TEST_USER_ID=
+  ```
 1. Установить taskfile
   ```bash 
   go install github.com/go-task/task/v3/cmd/task@latest
@@ -59,12 +68,14 @@
 * `DB_TEST_USER_ID` - telegram ID юзера для которого создадутся тестовые данные (выставлять только в тестовой среде)
 
 ## Выбор библиотек
+* `taskfile` - лучше чем Makefile во всем
 * `telebot` - мне как бекенд разработчику, гораздо комфортнее с httpServer-подобной семантикой  
 * `ent` - просто хороший ORM для golang (по сравнению с gorm, bun более производительный за счет кодогенерации)
 * `atlas` - движок миграций поддерживающий декларативные миграции
 * `testfixtures` - загрузка тестовых данных определенных в ямл
 * `testcontainers` - запуск контейнеров из го (для интеграционного тестирования)
 * `mockery` - кодогенерация моков, выбрал из-за более тесной интеграции с `testify`
+* `cockroachdb/errors` - обработка ошибок аналогичная `pkg/errors`, но репа поддерживается и есть интеграция с `sentry`
 
 ## tAPI
 ### Получение id / alive signal
