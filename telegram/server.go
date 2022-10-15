@@ -31,7 +31,7 @@ func NewServer(
 ) (*Server, error) {
 	pref := tele.Settings{
 		Token:  cfg.Token,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second}, //nolint:gomnd
+		Poller: &tele.LongPoller{Timeout: time.Second},
 		OnError: func(err error, c tele.Context) {
 			log.Errorf("%+v", errors.WithContextTags(err, requestContext(c)))
 		},
