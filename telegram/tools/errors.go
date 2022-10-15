@@ -8,56 +8,63 @@ import (
 )
 
 var (
-	ErrInvalidCreateExpense = UserError{
-		Title:  "invalid request",
-		Detail: "use format [/exp 100 Food]; where 100 is price and number, Food is any string",
-	}
 	ErrInternal = UserError{
-		Title:  "internal error",
-		Detail: "bot eaten too much fastfood",
+		Title:         "unexpected error",
+		Help:          "you have found a bug, report it plz",
+		isNotExpected: true,
+	}
+
+	ErrInvalidCreateExpense = UserError{
+		Title: "invalid request",
+		Help:  "use format [/exp 100 Food]; where 100 is price and number, Food is any string",
 	}
 	ErrInvalidListExpense = UserError{
-		Title:  "invalid request",
-		Detail: "use format [/all day]; you can use day, month, week, year or 2h30m",
+		Title: "invalid request",
+		Help:  "use format [/all day]; you can use day, month, week, year or 2h30m",
 	}
-
 	ErrInvalidSetLimit = UserError{
-		Title:  "invalid request",
-		Detail: "use format [/limit <float>]",
+		Title: "invalid request",
+		Help:  "use format [/limit <float>]",
 	}
-
 	ErrLimitBlockExpense = UserError{
-		Title:  "inconsistent request",
-		Detail: "cant do operation because of limit",
+		Title: "inconsistent request",
+		Help:  "cant do operation because of limit",
 	}
-
 	ErrSetLimitBlockedByExpenses = UserError{
-		Title:      "inconsistent request",
-		Detail:     "cant set limit less then sum",
-		isExpected: true,
+		Title: "inconsistent request",
+		Help:  "cant set limit less then sum",
 	}
 )
 
 type UserError struct {
-	Title      string
-	Detail     string
-	isExpected bool
+	Title         string
+	Help          string
+	isNotExpected bool
+
+	internal error
 }
 
 func (e UserError) Error() string {
 	b := strings.Builder{}
 
-	b.WriteString("Error happened :(\n")
-	b.WriteString(e.Title + ": " + e.Detail)
+	b.WriteString("Error happened: " + e.Title + "\n")
+	b.WriteString("message: " + e.internal.Error() + "\n\n")
+	b.WriteString(e.Help)
 
 	return b.String()
 }
 
+func (e UserError) with(internal error) UserError {
+	e.internal = internal
+
+	return e
+}
+
 func SendError(err error, c tele.Context, e UserError) error {
-	terr := c.Send(e.Error())
+	terr := c.Send(e.with(err).Error())
 	if terr != nil {
 		err = errors.Wrapf(terr, "during handling: %v", err)
-	} else if e.isExpected {
+	} else if !e.isNotExpected {
 		return nil
 	}
 

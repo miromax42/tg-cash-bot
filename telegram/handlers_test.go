@@ -147,7 +147,7 @@ func (s *HandlersTestSuite) TestCreateExpense() {
 				srv.expense = expense
 			},
 			true,
-			repo.ErrLimitExceed,
+			nil,
 		},
 	}
 
@@ -184,7 +184,7 @@ func (s *HandlersTestSuite) TestSetLimit() {
 		err        error
 	}{
 		{
-			"happy path",
+			"out of limit",
 			func() *mocks.TelegramContext {
 				c := mocks.NewTelegramContext(s.T())
 				c.On("Get", SettingsKey.String()).Return(&repo.PersonalSettingsResp{

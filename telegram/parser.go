@@ -101,7 +101,7 @@ func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 
 func NewSetLimitRequest(c tele.Context) (SetLimitReq, error) {
 	limit, err := strconv.ParseFloat(c.Data(), 64) //nolint:gomnd
-	err = errors.Wrapf(err, "parse to float %q", c.Data())
+	err = errors.Wrap(err, "arg must be float")
 
 	return SetLimitReq{
 		Limit: limit,

@@ -16,9 +16,25 @@ func (_m *Logger) Debug(args ...interface{}) {
 	_m.Called(_ca...)
 }
 
+// Debugf provides a mock function with given fields: format, args
+func (_m *Logger) Debugf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
 // Error provides a mock function with given fields: args
 func (_m *Logger) Error(args ...interface{}) {
 	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Errorf provides a mock function with given fields: format, args
+func (_m *Logger) Errorf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
 	_ca = append(_ca, args...)
 	_m.Called(_ca...)
 }
@@ -30,6 +46,14 @@ func (_m *Logger) Fatal(args ...interface{}) {
 	_m.Called(_ca...)
 }
 
+// Fatalf provides a mock function with given fields: format, args
+func (_m *Logger) Fatalf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
 // Info provides a mock function with given fields: args
 func (_m *Logger) Info(args ...interface{}) {
 	var _ca []interface{}
@@ -37,9 +61,40 @@ func (_m *Logger) Info(args ...interface{}) {
 	_m.Called(_ca...)
 }
 
-// Trace provides a mock function with given fields: args
-func (_m *Logger) Trace(args ...interface{}) {
+// Infof provides a mock function with given fields: format, args
+func (_m *Logger) Infof(format string, args ...interface{}) {
 	var _ca []interface{}
+	_ca = append(_ca, format)
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Panic provides a mock function with given fields: args
+func (_m *Logger) Panic(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Panicf provides a mock function with given fields: format, args
+func (_m *Logger) Panicf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Print provides a mock function with given fields: args
+func (_m *Logger) Print(args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Printf provides a mock function with given fields: format, args
+func (_m *Logger) Printf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
 	_ca = append(_ca, args...)
 	_m.Called(_ca...)
 }
@@ -47,6 +102,14 @@ func (_m *Logger) Trace(args ...interface{}) {
 // Warn provides a mock function with given fields: args
 func (_m *Logger) Warn(args ...interface{}) {
 	var _ca []interface{}
+	_ca = append(_ca, args...)
+	_m.Called(_ca...)
+}
+
+// Warnf provides a mock function with given fields: format, args
+func (_m *Logger) Warnf(format string, args ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
 	_ca = append(_ca, args...)
 	_m.Called(_ca...)
 }

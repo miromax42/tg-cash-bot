@@ -17,10 +17,7 @@ vars:
 tasks:
   gen: go generate ./...
 
-  test:
-    cmds:
-      - go test --coverprofile=coverage.out ./... -short
-      - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
+  test: go test --coverprofile=coverage.out ./... -short
 
   run: go run ./...
 
@@ -53,3 +50,8 @@ tasks:
       - docker rm tele-postgres
       - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
     ignore_error: true
+
+  precommit:
+    cmds:
+      - task: test
+      - task: lint
