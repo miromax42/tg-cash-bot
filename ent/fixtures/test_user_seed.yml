@@ -1,0 +1,14 @@
+personal_settings:
+  - id: {{$.ID}}
+    currency: RUB
+    limit: 100
+expenses:
+   - created_by: {{$.ID}}
+     amount: 10
+     category: courses
+   - created_by: {{$.ID}}
+     amount: 40.50
+     category: courses
+   - created_by: {{$.ID}}
+     amount: 22.99
+     category: bananas

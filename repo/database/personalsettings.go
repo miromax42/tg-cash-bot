@@ -3,8 +3,12 @@ package database
 import (
 	"context"
 
+	"entgo.io/ent/dialect/sql"
+	"github.com/cockroachdb/errors"
+
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 type PersonalSettings struct {
@@ -24,27 +28,37 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 			return repo.DefaultPersonalSettingsResp(), nil
 		}
 
-		return nil, err
+		return nil, errors.Wrap(err, "get")
 	}
 
 	return &repo.PersonalSettingsResp{
 		Currency: settings.Currency,
+		Limit:    settings.Limit,
 	}, nil
 }
 
 func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq) error {
-	query := p.db.PersonalSettings.Create().SetID(req.UserID)
+	return WithTx(ctx, p.db, func(tx *ent.Tx) error {
+		expenses := NewExpense(p.db)
+		sum, err := expenses.allUserExpense(ctx, repo.ListUserExpenseReq{
+			UserID:   req.UserID,
+			FromTime: util.TimeMonthAgo(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "get sum expenses")
+		}
+		if req.Limit != nil && sum > *req.Limit {
+			return errors.WithHint(repo.ErrLimitExceed, "current sum is bigger than chosen limit")
+		}
 
-	if req.Currency != nil {
-		query.SetCurrency(*req.Currency)
-	}
-
-	if err := query.
-		OnConflict().
-		UpdateNewValues().
-		Exec(ctx); err != nil {
-		return err
-	}
-
-	return nil
+		return errors.Wrap(p.db.PersonalSettings.Create().
+			SetID(req.UserID).
+			SetNillableCurrency(req.Currency).
+			SetNillableLimit(req.Limit).
+			OnConflict(
+				sql.ConflictColumns("id"),
+			).
+			UpdateNewValues().
+			Exec(ctx), "upsert settings")
+	})
 }

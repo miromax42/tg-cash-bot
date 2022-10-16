@@ -1,0 +1,48 @@
+version: 3
+
+env:
+  GOVER: $(shell go version | perl -nle '/(go\d\S+)/; print $$1;')
+  LINTVER: v1.49.0
+  PACKAGE: gitlab.ozon.dev/miromaxxs/telegram-bot
+
+vars:
+  MIGRATE_DIR: file://ent/migrate/migrations
+  BINDIR: ${PWD}/bin
+  LINTBIN: ${BINDIR}/lint_{{.GOVER}}_{{.LINTVER}}
+  PG_DEFAULT_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOSTNAME}:5432/postgres?sslmode=disable
+
+tasks:
+  bindir: mkdir -p {{.BINDIR}}
+
+  gen: go generate ./...
+
+  install-test: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+
+  test:
+    deps: [gen,install-test]
+    cmds:
+      - go test --coverprofile=coverage.out -json ./... | gotestfmt -hide empty-packages
+      - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
+
+  build:
+    deps: [bindir,gen]
+    cmds:
+      - go build -o {{.BINDIR}}/bot ./main.go
+
+  install-lint:
+    deps: [bindir]
+    status:
+      - golangci-lint --version
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@{{.LINTVER}}
+
+  lint:
+    deps: [install-lint,gen]
+    cmds:
+      - golangci-lint run ./...
+
+  migration-verify: >
+    go run -mod=mod ariga.io/atlas/cmd/atlas migrate lint
+    --dev-url={{.PG_DEFAULT_URL}}
+    --dir={{.MIGRATE_DIR}}
+    --latest=3

@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/signal"
 	"syscall"
 
+	"entgo.io/ent/dialect/sql"
+	"github.com/cockroachdb/errors"
+	"github.com/go-testfixtures/testfixtures/v3"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -19,7 +22,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
-func main() {
+func main() { //nolint:funlen // main func
 	var (
 		db       *ent.Client
 		exchange currency.Exchange
@@ -33,34 +36,25 @@ func main() {
 
 	cfg, err := util.NewConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
 	init, initCtx := errgroup.WithContext(mainCtx)
 
 	init.Go(func() (err error) {
-		db, err = ent.Open("sqlite3", "file:test.db?_fk=1")
-		if err != nil {
-			return fmt.Errorf("failed opening connection to sqlite: %w", err)
-		}
+		db, err = migrateDB(initCtx, cfg.DB)
 
-		if err := db.Schema.Create(initCtx); err != nil {
-			return fmt.Errorf("failed creating schema resources: %w", err)
-		}
-
-		return nil
+		return errors.Wrap(err, "db")
 	})
 
 	init.Go(func() (err error) {
-		if exchange, err = exhange.New(initCtx, cfg.Exchange); err != nil {
-			return fmt.Errorf("init exchange: %w", err)
-		}
+		exchange, err = exhange.New(initCtx, cfg.Exchange)
 
-		return nil
+		return errors.Wrap(err, "exchange")
 	})
 
 	if err := init.Wait(); err != nil {
-		log.Fatalf("exit reason: %s \n", err)
+		log.Panicf(errors.Wrap(err, "init").Error())
 	}
 
 	work, workCtx := errgroup.WithContext(mainCtx)
@@ -68,7 +62,8 @@ func main() {
 	work.Go(func() (err error) {
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
-		srv, err = telegram.NewServer(cfg.Telegram, log, expense, personalSettings, exchange)
+
+		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, expense, personalSettings, exchange)
 		if err != nil {
 			return err
 		}
@@ -84,18 +79,57 @@ func main() {
 
 		<-workCtx.Done()
 		srv.Stop()
-		if err := db.Close(); err != nil {
-			return fmt.Errorf("close db: %w", err)
-		}
 
-		log.Info("bot stopped")
-
-		return nil
+		return errors.Wrap(db.Close(), "close db")
 	})
 
 	if err := work.Wait(); err != nil {
-		log.Fatalf("gracefull stop: %s \n", err)
+		log.Panicf("gracefull stop: %s \n", err)
 	} else {
 		log.Info("gracefully stopped!")
 	}
+}
+
+func migrateDB(ctx context.Context, cfg util.ConfigDB) (*ent.Client, error) {
+	db, err := ent.Open("postgres", cfg.URL)
+	if err != nil {
+		return nil, errors.Wrap(err, "ent connect")
+	}
+
+	if err := db.Schema.Create(ctx); err != nil {
+		return nil, errors.Wrap(err, "migrate")
+	}
+
+	if err := initFixtures("postgres", cfg); err != nil {
+		return nil, errors.Wrap(err, "fixtures")
+	}
+
+	return db, nil
+}
+
+func initFixtures(dialect string, cfg util.ConfigDB) error {
+	if cfg.TestUserID == 0 {
+		return nil
+	}
+
+	sqlDB, err := sql.Open(dialect, cfg.URL)
+	if err != nil {
+		return err
+	}
+	defer sqlDB.Close()
+
+	fixtures, err := testfixtures.New(
+		testfixtures.Template(),
+		testfixtures.TemplateData(map[string]interface{}{
+			"ID": cfg.TestUserID,
+		}),
+		testfixtures.Database(sqlDB.DB()),
+		testfixtures.Dialect(dialect),
+		testfixtures.FilesMultiTables("ent/fixtures/test_user_seed.yml"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return fixtures.Load()
 }

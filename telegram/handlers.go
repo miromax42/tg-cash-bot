@@ -1,7 +1,8 @@
 package telegram
 
 import (
-	"context"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -9,17 +10,18 @@ import (
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/errors"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 )
 
 const oneCoin = 1
 
-func (s *Server) StartHelp(c tele.Context) error {
+func StartHelp(c tele.Context) error {
 	b := strings.Builder{}
 
-	b.WriteString("availible commands:\n")
+	b.WriteString("available commands:\n")
 	b.WriteString("/exp 99 Fun -- adds expense 99 of Fun category\n")
-	b.WriteString("/all day -- show expenses for last day,\n\t examples of time modificators [day, week, month, year, 2h30m]\n")
+	b.WriteString("/all day -- show expenses for last day,\n")
+	b.WriteString("\t examples of time modificators [day, week, month, year, 2h30m]\n")
 
 	return c.Send(b.String())
 }
@@ -33,18 +35,16 @@ type CreateExpenseReq struct {
 func (s *Server) CreateExpense(c tele.Context) error {
 	req, err := NewCreateExpenseReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInvalidCreateExpense)
-		return err
+		return tools.SendError(err, c, tools.ErrInvalidCreateExpense)
 	}
 
-	amount, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: req.Amount,
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
 	})
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
 	databaseReq := repo.CreateExpenseReq{
@@ -53,10 +53,13 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		Category: req.Category,
 	}
 
-	resp, err := s.expense.CreateExpense(context.TODO(), databaseReq)
+	resp, err := s.expense.CreateExpense(requestContext(c), databaseReq)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+		if errors.Is(err, repo.ErrLimitExceed) {
+			return tools.SendError(err, c, tools.ErrLimitBlockExpense)
+		}
+
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send(CreateExpenseAnswer(resp, req.Amount))
@@ -70,8 +73,7 @@ type ListUserExpenseReq struct {
 func (s *Server) ListExpenses(c tele.Context) error {
 	req, err := NewListUserExpenseReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInvalidListExpense)
-		return err
+		return tools.SendError(err, c, tools.ErrInvalidListExpense)
 	}
 
 	databaseReq := repo.ListUserExpenseReq{
@@ -79,20 +81,18 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		FromTime: req.FromTime,
 	}
 
-	resp, err := s.expense.ListUserExpense(context.TODO(), databaseReq)
+	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
-	multiplier, err := s.exchange.Convert(context.TODO(), currency.ConvertReq{
+	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: oneCoin,
 		From:   s.exchange.Base(),
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 	})
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send(ListExpensesAnswer(resp, multiplier))
@@ -111,14 +111,47 @@ func (s *Server) SetCurrency(c tele.Context) error {
 
 	req, err := NewPersonalSettingsReq(c)
 	if err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
-	if err := s.userSettings.Set(context.TODO(), req); err != nil {
-		errors.SendError(c, errors.ErrInternal)
-		return err
+	if err := s.userSettings.Set(requestContext(c), req); err != nil {
+		return tools.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send("currency set to " + c.Data())
+}
+
+type SetLimitReq struct {
+	Limit float64
+}
+
+func (s *Server) SetLimit(c tele.Context) error {
+	req, err := NewSetLimitRequest(c)
+	if err != nil {
+		return tools.SendError(err, c, tools.ErrInvalidSetLimit)
+	}
+
+	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
+		Amount: req.Limit,
+		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
+		To:     s.exchange.Base(),
+	})
+	if err != nil {
+		return tools.SendError(err, c, tools.ErrInvalidSetLimit)
+	}
+
+	repoReq := repo.PersonalSettingsReq{
+		UserID: c.Sender().ID,
+		Limit:  &amount,
+	}
+
+	if err = s.userSettings.Set(requestContext(c), repoReq); err != nil {
+		if errors.Is(err, repo.ErrLimitExceed) {
+			return tools.SendError(err, c, tools.ErrSetLimitBlockedByExpenses)
+		}
+
+		return tools.SendError(err, c, tools.ErrInternal)
+	}
+
+	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))
 }

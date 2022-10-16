@@ -14,7 +14,7 @@ func ListExpensesAnswer(data repo.ListUserExpenseResp, multiplier float64) strin
 	for i := range data {
 		b.WriteString(data[i].Category)
 		b.WriteString(": ")
-		b.WriteString(strconv.FormatFloat(data[i].Sum*multiplier, 'f', 2, 64))
+		b.WriteString(strconv.FormatFloat(data[i].Sum*multiplier, 'f', 2, 64)) //nolint:gomnd
 
 		if i != len(data)-1 {
 			b.WriteString("\n")
@@ -34,7 +34,7 @@ func CreateExpenseAnswer(data *repo.CreateExpenseResp, amount float64) string {
 
 	b := strings.Builder{}
 
-	b.WriteString(strconv.FormatFloat(amount, 'f', 2, 64))
+	b.WriteString(strconv.FormatFloat(amount, 'f', 2, 64)) //nolint:gomnd
 	b.WriteString(" on ")
 	b.WriteString(data.Category + "\n")
 	b.WriteString("(" + data.CreatedAt.Format(time.Kitchen) + ")")
