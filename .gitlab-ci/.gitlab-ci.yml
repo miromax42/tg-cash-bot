@@ -1,5 +1,4 @@
 .postgres_template: &postgres_service
-  stage: test
   services:
     - name: postgres:latest
       alias: postgres-ci
@@ -16,6 +15,7 @@ default:
 stages:
   - build
   - test
+  - generate
 
 build:
   stage: build
@@ -23,9 +23,10 @@ build:
     - task ci:build
 
 test:
-  <<: *postgres_service
+  stage: test
   script:
     - task ci:test
+  <<: *postgres_service
 
 lint:
   stage: test
@@ -33,6 +34,17 @@ lint:
     - task ci:lint
 
 migration-verify:
-  <<: *postgres_service
+  stage: test
   script:
     - task ci:migration-verify
+  <<: *postgres_service
+
+dependency-graph:
+  stage: generate
+  image: golang:1.19-alpine3.15
+  script:
+    - task ci:depgraph-gen
+  artifacts:
+    paths:
+      - godepgraph.png
+    expire_in: never

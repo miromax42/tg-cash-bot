@@ -6,6 +6,7 @@ env:
   PACKAGE: gitlab.ozon.dev/miromaxxs/telegram-bot
 
 vars:
+  BASE_PKG: $(go list)
   MIGRATE_DIR: file://ent/migrate/migrations
   BINDIR: ${PWD}/bin
   LINTBIN: ${BINDIR}/lint_{{.GOVER}}_{{.LINTVER}}
@@ -46,3 +47,25 @@ tasks:
     --dev-url={{.PG_DEFAULT_URL}}
     --dir={{.MIGRATE_DIR}}
     --latest=3
+
+  dot-install:
+    status:
+      - dot -h
+    cmds:
+      - apk add graphviz
+      - apk add ttf-opensans
+
+  depgraph-gen:
+    deps: [gen,dot-install]
+    vars:
+      EXCLUSIONS: not,{{.BASE_PKG}}/ent,{{.BASE_PKG}}/util
+      BASE_PKG_DELIMITED: $(echo {{.BASE_PKG}} | sed 's/\//\\\//g')
+    cmds:
+      - >
+        go run -mod=mod github.com/kisielk/godepgraph
+        -o {{.BASE_PKG}}
+        -onlyprefixes {{.BASE_PKG}}
+        -ignoreprefixes {{.EXCLUSIONS}}
+        {{.BASE_PKG}} |
+        sed "s/{{.BASE_PKG_DELIMITED}}//g" |
+        dot -Tpng -o godepgraph.png
