@@ -13,31 +13,31 @@ default:
     - go install github.com/go-task/task/v3/cmd/task@latest
     
 stages:
-#  - build
-#  - test
+  - build
+  - test
   - generate
 
-#build:
-#  stage: build
-#  script:
-#    - task ci:build
-#
-#test:
-#  stage: test
-#  script:
-#    - task ci:test
-#  <<: *postgres_service
-#
-#lint:
-#  stage: test
-#  script:
-#    - task ci:lint
-#
-#migration-verify:
-#  stage: test
-#  script:
-#    - task ci:migration-verify
-#  <<: *postgres_service
+build:
+  stage: build
+  script:
+    - task ci:build
+
+test:
+  stage: test
+  script:
+    - task ci:test
+  <<: *postgres_service
+
+lint:
+  stage: test
+  script:
+    - task ci:lint
+
+migration-verify:
+  stage: test
+  script:
+    - task ci:migration-verify
+  <<: *postgres_service
 
 dependency-graph:
   stage: generate
