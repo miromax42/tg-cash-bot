@@ -27,7 +27,7 @@ type CreateExpenseResp struct {
 func (r *CreateExpenseResp) String() string {
 	b := strings.Builder{}
 
-	b.WriteString(strconv.FormatFloat(r.Amount, 'f', 2, 64))
+	b.WriteString(strconv.FormatFloat(r.Amount, 'f', 2, 64)) //nolint:gomnd
 	b.WriteString(" on ")
 	b.WriteString(r.Category + "\n")
 	b.WriteString("(" + r.CreatedAt.Format(time.Kitchen) + ")")

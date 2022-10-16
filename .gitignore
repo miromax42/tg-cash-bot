@@ -1,11 +1,20 @@
 test.env
 *.db
 
-# ent
-ent/**
-!ent/entc.go
+### gen
+!ent/migrate/migrations
+!ent/fixtures
+!ent/migrate/main.go
 !ent/schema
+!ent/entc.go
 !ent/generate.go
+ent/**
+
+mocks/**.go
+
+### Taskfile
+.task/
+
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json

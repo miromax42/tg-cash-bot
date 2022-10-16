@@ -1,0 +1,105 @@
+output:
+  path-prefix: ""
+  sort-results: true
+  format: tab
+  print-issued-lines: false
+  print-linter-name: true
+  uniq-by-line: false
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    fieldalignment: true
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  lll:
+    line-length: 120
+  gocritic:
+    enabled-tags:
+      - performance
+      - diagnostic
+      - style
+      - opinionated
+    disabled-checks:
+      - whyNoLint
+  nakedret:
+    max-func-lines: 20
+  goimports:
+    local-prefixes: gitlab.ozon.dev
+
+linters:
+  enable:
+    - asciicheck # check that your code does not contain non-ASCII identifiers
+    - bodyclose # checks whether res.Body is correctly closed
+    - containedctx # detects struct contained context.Context field
+    - contextcheck # check whether the function uses a non-inherited context
+    - decorder # check declaration order and count of types, constants, variables and functions
+    - dogsled # checks assignments with too many blank identifiers (e.g. x, , , _, := f())
+    - dupl # tool for code clone detection
+    - durationcheck # check for two durations multiplied together
+    - errchkjson # checks types passed to the json encoding functions
+    - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
+    - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
+    - execinquery # execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds
+    - exhaustive # check exhaustiveness of enum switch statements and map literals
+    - exportloopref # checks for pointers to enclosing loop variables
+    - forbidigo # forbid regexp: default pattern of ^(fmt\.Print.*|print|println)$ is used to eliminate debug statements
+    - forcetypeassert # finds forced type assertions
+    - funlen # tool for detection of long functions
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit # computes and checks the cognitive complexity of functions
+    - goconst
+    - gocritic
+    - goerr113 # check the errors handling expressions
+    - gofmt
+    - goimports
+    - gomnd # detect magic numbers
+    - gosec
+    - grouper # analyzer to analyze expression groups.
+    - lll
+    - makezero # find slice declarations that are not initialized with zero length and are later used with append
+    - nakedret # naked returns in functions greater than a specified function length
+    - nilerr # finds the code that returns nil even if it checks that the error is not nil.
+    - nilnil
+    - nlreturn
+    - noctx # finds sending http request without context.Context
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - tparallel
+
+issues:
+  exclude-rules:
+    - path: test.*\.go
+      linters:
+        - errcheck
+        - dupl
+        - gosec
+        - dogsled
+        - gomnd
+        - gochecknoglobals
+        - funlen
+        - varnamelen
+    - path: config.go
+      linters:
+        - dogsled
+        - gomnd
+    - path: generate.go
+      linters:
+        - lll
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - ent
+    - mocks
+  modules-download-mode: mod
+  allow-parallel-runners: true

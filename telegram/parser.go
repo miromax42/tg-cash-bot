@@ -4,29 +4,43 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
+)
+
+var (
+	ErrArgsCount  = errors.New("not supported args count")
+	ErrValidation = errors.New("not valid")
 )
 
 func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
-	if len(c.Args()) != 2 {
-		return CreateExpenseReq{}, util.ErrBadFormat
+	const (
+		awaitedArgs = 2
+
+		minAmount      = 0
+		maxAmount      = 10000
+		minLenCategory = 0
+		maxLenCategory = 100
+	)
+
+	if len(c.Args()) != awaitedArgs {
+		return CreateExpenseReq{}, ErrArgsCount
 	}
 
-	amount, err := strconv.ParseFloat(c.Args()[0], 64)
+	amount, err := strconv.ParseFloat(c.Args()[0], 64) //nolint:gomnd
 	if err != nil {
-		return CreateExpenseReq{}, util.ErrBadFormat
+		return CreateExpenseReq{}, errors.Wrapf(err, "parse to float %q", c.Args()[0])
 	}
 	category := c.Args()[1]
 
-	if !(0 < amount && amount < 10000) {
-		return CreateExpenseReq{}, util.ErrBadFormat
+	if !(minAmount < amount && amount < maxAmount) {
+		return CreateExpenseReq{}, errors.WithHint(ErrValidation, "amount")
 	}
-	if !(0 < len(category) && len(category) <= 100) {
-		return CreateExpenseReq{}, util.ErrBadFormat
+	if !(minLenCategory < len(category) && len(category) <= maxLenCategory) {
+		return CreateExpenseReq{}, errors.WithHint(ErrValidation, "category")
 	}
 
 	return CreateExpenseReq{
@@ -37,8 +51,16 @@ func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
 }
 
 func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
-	if len(c.Args()) != 1 {
-		return ListUserExpenseReq{}, util.ErrBadFormat
+	const (
+		awaitedArgs = 1
+
+		hoursInDay   = 24
+		hoursInWeek  = hoursInDay * 7
+		hoursInMonth = hoursInWeek * 30
+		hoursInYear  = 8760
+	)
+	if len(c.Args()) != awaitedArgs {
+		return ListUserExpenseReq{}, ErrArgsCount
 	}
 
 	durationToken := c.Args()[0]
@@ -47,15 +69,15 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 	if err != nil {
 		switch durationToken {
 		case "day":
-			duration = 24 * time.Hour
+			duration = hoursInDay * time.Hour
 		case "week":
-			duration = 7 * 24 * time.Hour
+			duration = hoursInWeek * time.Hour
 		case "month":
-			duration = 30 * 24 * time.Hour
+			duration = hoursInMonth * time.Hour
 		case "year":
-			duration = 8760 * time.Hour
+			duration = hoursInYear * time.Hour
 		default:
-			return ListUserExpenseReq{}, util.ErrBadFormat
+			return ListUserExpenseReq{}, errors.WithHint(ErrValidation, "duration")
 		}
 	}
 
@@ -68,12 +90,20 @@ func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 func NewPersonalSettingsReq(c tele.Context) (repo.PersonalSettingsReq, error) {
 	newCurrency, err := currency.Parse(c.Data())
 	if err != nil {
-		return repo.PersonalSettingsReq{}, err
+		return repo.PersonalSettingsReq{}, errors.Wrap(err, "parse to currency")
 	}
 
 	return repo.PersonalSettingsReq{
 		UserID:   c.Sender().ID,
 		Currency: &newCurrency,
 	}, nil
+}
 
+func NewSetLimitRequest(c tele.Context) (SetLimitReq, error) {
+	limit, err := strconv.ParseFloat(c.Data(), 64) //nolint:gomnd
+	err = errors.Wrap(err, "arg must be float")
+
+	return SetLimitReq{
+		Limit: limit,
+	}, err
 }

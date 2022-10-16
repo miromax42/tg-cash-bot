@@ -2,12 +2,11 @@ package util
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewConfig(t *testing.T) {
 	_, err := NewConfig()
-	if err != nil {
-		t.Errorf("NewConfig() error = %v", err)
-		return
-	}
+	require.NoError(t, err)
 }

@@ -2,6 +2,7 @@ package exhange
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,6 +18,10 @@ type ExchangeSuite struct {
 }
 
 func (s *ExchangeSuite) SetupSuite() {
+	if testing.Short() {
+		s.T().Skip()
+	}
+
 	cfg, err := util.NewConfig()
 	require.NoError(s.T(), err)
 
@@ -25,7 +30,6 @@ func (s *ExchangeSuite) SetupSuite() {
 }
 
 func TestExchangeSuite(t *testing.T) {
-	t.Parallel()
 	suite.Run(t, new(ExchangeSuite))
 }
 
@@ -119,9 +123,10 @@ func (s *ExchangeSuite) TestConverter_Convert() {
 			gotAmount, err := s.c.Convert(context.Background(), tt.arg)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Convert() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
-			if gotAmount != tt.wantAmount {
+			if fmt.Sprintf("%.4f", gotAmount) != fmt.Sprintf("%.4f", tt.wantAmount) {
 				t.Errorf("Convert() gotAmount = %v, want %v", gotAmount, tt.wantAmount)
 			}
 		})

@@ -1,15 +1,66 @@
 version: '3'
 
+includes:
+  ci: ./.gitlab-ci/Taskfile.yml
+
 env:
   ENV: test
 
+
 dotenv: ['.env', '{{.ENV}}.env']
 
+
+vars:
+  MIGRATE_DIR: file://ent/migrate/migrations
+
+
 tasks:
-  test:
+  gen:
+    generates:
+      - mocks/*.go
+      - ent/**/*.go
+    sources:
+      - ./**/*.go
     cmds:
-      - go test --coverprofile=coverage.out ./...
-      - go tool cover -func=coverage.out | grep 'total:' | tr -d '[:blank:]\(\)'
+      - go generate ./...
+
+  test: go test --coverprofile=coverage.out ./... -short
+
   run: go run ./...
-  gen: go generate ./...
+
   lint: golangci-lint run ./...
+
+  migration-verify: >
+    go run -mod=mod ariga.io/atlas/cmd/atlas migrate lint
+    --dev-url={{.DB_URL}}
+    --dir={{.MIGRATE_DIR}}
+    --latest=1
+  migration-gen: go run -mod=mod ent/migrate/main.go
+  migration-new: go run -mod=mod ent/migrate/main.go {{.CLI_ARGS}}
+  migration-force: go run -mod=mod ariga.io/atlas/cmd/atlas migrate hash --dir {{.MIGRATE_DIR}}
+  migration-apply: >
+    go run -mod=mod ariga.io/atlas/cmd/atlas migrate apply
+    --dir {{.MIGRATE_DIR}}
+    --url {{.DB_URL}}
+
+  precommit:
+    cmds:
+      - task: gen
+      - task: test
+      - task: lint
+
+  docker-prepare:
+    cmds:
+      - docker stop tele-postgres
+      - docker rm tele-postgres
+    ignore_error: true
+
+  docker:
+    deps: [docker-prepare]
+    cmds:
+      - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
+
+  start-new:
+    deps: [docker,gen]
+    cmds:
+      - cmd: run
