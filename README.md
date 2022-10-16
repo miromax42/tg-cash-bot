@@ -40,6 +40,9 @@
   > Интеграционные табл-тесты на постгрес в докере. Тест поднимает постгрес сам (`testcontainers`),
   > заполнение базы для теста (`testfixtures`)
 
+## Граф зависимостей
+![dependency graph](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/jobs/artifacts/master/raw/godepgraph.png?job=dependency-graph)
+
 ## Быстрый старт
 0. Создать фаил `test.env` в корне проекта с содержимым:
   > `DB_TEST_USER_ID` можно посмотреть командой в боте `/ping`
