@@ -53,6 +53,7 @@ tasks:
       - dot -h
     cmds:
       - apk add graphviz
+      - apk add ttf-font-awesome
 
   depgraph-gen:
     deps: [gen,dot-install]
