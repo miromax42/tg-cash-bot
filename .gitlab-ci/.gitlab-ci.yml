@@ -8,7 +8,7 @@
     POSTGRES_HOSTNAME: postgres-ci
 
 default:
-  image: golang:1.19-alpine3.15
+  image: golang:latest
   before_script: 
     - go install github.com/go-task/task/v3/cmd/task@latest
     
@@ -41,6 +41,7 @@ migration-verify:
 
 dependency-graph:
   stage: generate
+  image: golang:1.19-alpine3.15
   script:
     - task ci:depgraph-gen
   artifacts:
