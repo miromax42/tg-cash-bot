@@ -41,7 +41,7 @@
   > заполнение базы для теста (`testfixtures`)
 
 ## Граф зависимостей
-![dependency graph](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/jobs/artifacts/devtask/depgraph/godepgraph.png?job=dependency-graph)
+![dependency graph](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/jobs/artifacts/main/raw/godepgraph.png?job=dependency-graph)
 
 ## Быстрый старт
 0. Создать фаил `test.env` в корне проекта с содержимым:
