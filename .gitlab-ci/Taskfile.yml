@@ -52,7 +52,7 @@ tasks:
     status:
       - dot -h
     cmds:
-      - apt install graphviz
+      - apk add graphviz
 
   depgraph-gen:
     deps: [gen,dot-install]
