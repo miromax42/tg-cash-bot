@@ -48,8 +48,14 @@ tasks:
     --dir={{.MIGRATE_DIR}}
     --latest=3
 
+  dot-install:
+    status:
+      - dot -h
+    cmds:
+      - apt install graphviz
+
   depgraph-gen:
-    deps: [gen]
+    deps: [gen,dot-install]
     vars:
       EXCLUSIONS: not,{{.BASE_PKG}}/ent,{{.BASE_PKG}}/util
       BASE_PKG_DELIMITED: $(echo {{.BASE_PKG}} | sed 's/\//\\\//g')
