@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cockroachdb/errors"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -14,7 +14,7 @@ import (
 )
 
 type Server struct {
-	logger       util.Logger
+	logger       logger.Logger
 	bot          *tele.Bot
 	expense      repo.Expense
 	userSettings repo.PersonalSettings
@@ -24,7 +24,7 @@ type Server struct {
 func NewServer(
 	ctx context.Context,
 	cfg util.ConfigTelegram,
-	log util.Logger,
+	log logger.Logger,
 	expense repo.Expense,
 	userSettings repo.PersonalSettings,
 	exchange currency.Exchange,
@@ -33,7 +33,7 @@ func NewServer(
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: time.Second},
 		OnError: func(err error, c tele.Context) {
-			log.Errorf("%+v", errors.WithContextTags(err, requestContext(c)))
+			log.ErrorCtx(requestContext(c), err)
 		},
 	}
 

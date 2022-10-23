@@ -8,7 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/cockroachdb/errors"
 	"github.com/go-testfixtures/testfixtures/v3"
-	"github.com/sirupsen/logrus"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	"golang.org/x/sync/errgroup"
 
 	_ "github.com/lib/pq"
@@ -32,11 +32,11 @@ func main() { //nolint:funlen // main func
 	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	log := logrus.New()
+	log := logger.New()
 
 	cfg, err := util.NewConfig()
 	if err != nil {
-		log.Panic(err)
+		log.PanicCtx(mainCtx, err)
 	}
 
 	init, initCtx := errgroup.WithContext(mainCtx)
@@ -54,7 +54,7 @@ func main() { //nolint:funlen // main func
 	})
 
 	if err := init.Wait(); err != nil {
-		log.Panicf(errors.Wrap(err, "init").Error())
+		log.PanicfCtx(initCtx, errors.Wrap(err, "init").Error())
 	}
 
 	work, workCtx := errgroup.WithContext(mainCtx)
@@ -75,7 +75,7 @@ func main() { //nolint:funlen // main func
 
 	work.Go(func() error {
 
-		log.Info("bot started")
+		log.InfoCtx(workCtx, "bot started")
 
 		<-workCtx.Done()
 		srv.Stop()
@@ -84,9 +84,9 @@ func main() { //nolint:funlen // main func
 	})
 
 	if err := work.Wait(); err != nil {
-		log.Panicf("gracefull stop: %s \n", err)
+		log.PanicfCtx(workCtx, "gracefull stop: %s \n", err)
 	} else {
-		log.Info("gracefully stopped!")
+		log.InfoCtx(workCtx, "gracefully stopped!")
 	}
 }
 
