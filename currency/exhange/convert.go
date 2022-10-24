@@ -37,7 +37,7 @@ func (c *Converter) Base() currency.Token {
 }
 
 func (c *Converter) Convert(ctx context.Context, req currency.ConvertReq) (amount float64, err error) {
-	_, span := otel.Tracer(util.RequestTrace).Start(ctx, "Exchange")
+	_, span := otel.Tracer(util.RequestTrace).Start(ctx, "exchange")
 	defer span.End()
 
 	_, ok1 := c.data[req.To]

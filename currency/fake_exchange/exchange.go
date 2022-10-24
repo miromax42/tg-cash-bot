@@ -12,7 +12,7 @@ import (
 type Exchange struct{}
 
 func (e Exchange) Convert(ctx context.Context, req currency.ConvertReq) (amount float64, err error) {
-	_, span := otel.Tracer(util.RequestTrace).Start(ctx, "Exchange")
+	_, span := otel.Tracer(util.RequestTrace).Start(ctx, "exchange")
 	defer span.End()
 
 	return req.Amount, nil

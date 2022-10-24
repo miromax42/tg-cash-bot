@@ -29,10 +29,8 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 func (s *Server) WithContext(ctx context.Context) func(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			rctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Handler")
+			rctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "telegram_handler")
 			defer span.End()
-
-			span.SpanContext().TraceID()
 
 			rctx = logtags.AddTag(rctx, "trace.id", span.SpanContext().TraceID())
 			rctx = logtags.AddTag(rctx, "request.user.id", c.Sender().ID)
