@@ -12,6 +12,7 @@ require (
 	github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8
 	github.com/lib/pq v1.10.6
 	github.com/mattn/go-sqlite3 v1.14.14
+	github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
@@ -79,7 +80,6 @@ require (
 	github.com/opencontainers/runc v1.1.3 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
-	github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63 // indirect
 	github.com/pingcap/log v0.0.0-20210625125904-98ed8e2eb1c7 // indirect
 	github.com/pingcap/tidb/parser v0.0.0-20220817134052-9709249e523a // indirect
 	github.com/pkg/errors v0.9.1 // indirect

@@ -3,33 +3,37 @@ package main
 import (
 	"context"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/cockroachdb/errors"
+	"github.com/cockroachdb/logtags"
 	"github.com/go-testfixtures/testfixtures/v3"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
-	"golang.org/x/sync/errgroup"
-
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/sync/errgroup"
+
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fake_exchange"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/exhange"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/database"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
-func main() { //nolint:funlen // main func
+func main() { //nolint:funlen
 	var (
 		db       *ent.Client
 		exchange currency.Exchange
 		srv      *telegram.Server
 	)
 
-	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx := logtags.AddTag(context.Background(), "golang.version", runtime.Version())
+
+	mainCtx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	log := logger.New()
@@ -48,7 +52,7 @@ func main() { //nolint:funlen // main func
 	})
 
 	init.Go(func() (err error) {
-		exchange, err = exhange.New(initCtx, cfg.Exchange)
+		exchange = fake_exchange.Exchange{}
 
 		return errors.Wrap(err, "exchange")
 	})

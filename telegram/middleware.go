@@ -15,7 +15,7 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		settings, err := s.userSettings.Get(requestContext(c), c.Sender().ID)
 		if err != nil || settings == nil {
-			return tools.SendError(err, c, tools.ErrInternal)
+			return s.SendError(err, c, tools.ErrInternal)
 		}
 
 		c.Set(SettingsKey.String(), settings)
@@ -34,10 +34,20 @@ func (s *Server) WithContext(ctx context.Context) func(next tele.HandlerFunc) te
 			rctx = logtags.AddTag(rctx, "request.id", uuid.New().String())
 			rctx = logtags.AddTag(rctx, "request.user.id", c.Sender().ID)
 			rctx = logtags.AddTag(rctx, "request.user.name", c.Sender().Username)
+			rctx = logtags.AddTag(rctx, "request.message", c.Message().Text)
 
 			c.Set(RequestContextKey.String(), rctx)
 
 			return next(c)
 		}
 	}
+}
+
+func (s *Server) Logger(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		s.logger.InfoCtx(requestContext(c), "request msg")
+
+		return next(c)
+	}
+
 }

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	tele "gopkg.in/telebot.v3"
+
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -33,7 +34,7 @@ func NewServer(
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: time.Second},
 		OnError: func(err error, c tele.Context) {
-			log.ErrorCtx(requestContext(c), err)
+			log.ErrorCtx(requestContext(c), fmt.Sprintf("%+v", err))
 		},
 	}
 
@@ -57,6 +58,7 @@ func NewServer(
 
 func (s *Server) setupRoutes(ctx context.Context) {
 	s.bot.Use(s.WithContext(ctx))
+	s.bot.Use(s.Logger)
 	s.bot.Use(s.Authentication)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {

@@ -35,7 +35,7 @@ type CreateExpenseReq struct {
 func (s *Server) CreateExpense(c tele.Context) error {
 	req, err := NewCreateExpenseReq(c)
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInvalidCreateExpense)
+		return s.SendError(err, c, tools.ErrInvalidCreateExpense)
 	}
 
 	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
@@ -44,7 +44,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		To:     s.exchange.Base(),
 	})
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	databaseReq := repo.CreateExpenseReq{
@@ -56,10 +56,10 @@ func (s *Server) CreateExpense(c tele.Context) error {
 	resp, err := s.expense.CreateExpense(requestContext(c), databaseReq)
 	if err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
-			return tools.SendError(err, c, tools.ErrLimitBlockExpense)
+			return s.SendError(err, c, tools.ErrLimitBlockExpense)
 		}
 
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send(CreateExpenseAnswer(resp, req.Amount))
@@ -73,7 +73,7 @@ type ListUserExpenseReq struct {
 func (s *Server) ListExpenses(c tele.Context) error {
 	req, err := NewListUserExpenseReq(c)
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInvalidListExpense)
+		return s.SendError(err, c, tools.ErrInvalidListExpense)
 	}
 
 	databaseReq := repo.ListUserExpenseReq{
@@ -83,7 +83,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 
 	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
@@ -92,7 +92,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 	})
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send(ListExpensesAnswer(resp, multiplier))
@@ -111,11 +111,11 @@ func (s *Server) SetCurrency(c tele.Context) error {
 
 	req, err := NewPersonalSettingsReq(c)
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	if err := s.userSettings.Set(requestContext(c), req); err != nil {
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send("currency set to " + c.Data())
@@ -128,7 +128,7 @@ type SetLimitReq struct {
 func (s *Server) SetLimit(c tele.Context) error {
 	req, err := NewSetLimitRequest(c)
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInvalidSetLimit)
+		return s.SendError(err, c, tools.ErrInvalidSetLimit)
 	}
 
 	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
@@ -137,7 +137,7 @@ func (s *Server) SetLimit(c tele.Context) error {
 		To:     s.exchange.Base(),
 	})
 	if err != nil {
-		return tools.SendError(err, c, tools.ErrInvalidSetLimit)
+		return s.SendError(err, c, tools.ErrInvalidSetLimit)
 	}
 
 	repoReq := repo.PersonalSettingsReq{
@@ -147,10 +147,10 @@ func (s *Server) SetLimit(c tele.Context) error {
 
 	if err = s.userSettings.Set(requestContext(c), repoReq); err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
-			return tools.SendError(err, c, tools.ErrSetLimitBlockedByExpenses)
+			return s.SendError(err, c, tools.ErrSetLimitBlockedByExpenses)
 		}
 
-		return tools.SendError(err, c, tools.ErrInternal)
+		return s.SendError(err, c, tools.ErrInternal)
 	}
 
 	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))
