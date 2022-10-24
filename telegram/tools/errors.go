@@ -20,8 +20,8 @@ var (
 		Help:  "use format [/all day]; you can use day, month, week, year or 2h30m",
 	}
 	ErrInvalidSetLimit = UserError{
-		Title:         "invalid request",
-		Help:          "use format [/limit <float>]",
+		Title: "invalid request",
+		Help:  "use format [/limit <float>]",
 	}
 	ErrLimitBlockExpense = UserError{
 		Title: "inconsistent request",
