@@ -22,6 +22,7 @@ tasks:
     sources:
       - ./**/*.go
     cmds:
+      - rm -rf ./mocks
       - go generate ./...
 
   test: go test --coverprofile=coverage.out ./... -short

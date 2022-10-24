@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent/expense"
@@ -25,6 +26,9 @@ func (e Expense) CreateExpense(
 	ctx context.Context,
 	req repo.CreateExpenseReq,
 ) (*repo.CreateExpenseResp, error) {
+	ctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Expense.Create")
+	defer span.End()
+
 	var model *ent.Expense
 	if err := WithTx(ctx, e.db, func(tx *ent.Tx) error {
 		settings := NewPersonalSettings(e.db)
@@ -64,6 +68,9 @@ func (e Expense) CreateExpense(
 }
 
 func (e Expense) ListUserExpense(ctx context.Context, req repo.ListUserExpenseReq) (repo.ListUserExpenseResp, error) {
+	ctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Expense.List")
+	defer span.End()
+
 	var expenses repo.ListUserExpenseResp
 	if err := e.db.Expense.Query().
 		Where(expense.CreatedBy(req.UserID)).

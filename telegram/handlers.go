@@ -62,7 +62,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return c.Send(CreateExpenseAnswer(resp, req.Amount))
+	return s.Send(c, CreateExpenseAnswer(resp, req.Amount))
 }
 
 type ListUserExpenseReq struct {
@@ -95,12 +95,12 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return c.Send(ListExpensesAnswer(resp, multiplier))
+	return s.Send(c, ListExpensesAnswer(resp, multiplier))
 }
 
 func (s *Server) SelectCurrency(reply *tele.ReplyMarkup) func(c tele.Context) error {
 	return func(c tele.Context) error {
-		return c.Send("Chose currency:", reply)
+		return s.Send(c, "Chose currency:", reply)
 	}
 }
 
@@ -118,7 +118,7 @@ func (s *Server) SetCurrency(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return c.Send("currency set to " + c.Data())
+	return s.Send(c, "currency set to "+c.Data())
 }
 
 type SetLimitReq struct {
@@ -153,5 +153,5 @@ func (s *Server) SetLimit(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return c.Send("limit set to " + fmt.Sprintf("%.2f", req.Limit))
+	return s.Send(c, "limit set to "+fmt.Sprintf("%.2f", req.Limit))
 }

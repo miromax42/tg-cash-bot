@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/logtags"
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
 )
 
 type Adapter struct {
@@ -13,6 +14,12 @@ type Adapter struct {
 
 func New() *Adapter {
 	return &Adapter{l: logrus.New()}
+}
+
+func NewTest() *Adapter {
+	l, _ := test.NewNullLogger()
+
+	return &Adapter{l}
 }
 
 func (a *Adapter) DebugfCtx(ctx context.Context, format string, args ...interface{}) {

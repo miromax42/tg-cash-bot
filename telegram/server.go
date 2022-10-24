@@ -62,7 +62,7 @@ func (s *Server) setupRoutes(ctx context.Context) {
 	s.bot.Use(s.Authentication)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {
-		return c.Send(fmt.Sprintf("pong! Your id: %d", c.Sender().ID))
+		return s.Send(c, fmt.Sprintf("pong! Your id: %d", c.Sender().ID))
 	})
 	s.bot.Handle("/start", StartHelp)
 
