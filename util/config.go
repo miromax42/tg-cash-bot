@@ -10,6 +10,7 @@ type Config struct {
 	Telegram ConfigTelegram `mapstructure:",squash"`
 	Exchange ConfigExchange `mapstructure:",squash"`
 	DB       ConfigDB       `mapstructure:",squash"`
+	Tracing  ConfigTracing  `mapstructure:",squash"`
 }
 
 type ConfigTelegram struct {
@@ -19,6 +20,10 @@ type ConfigTelegram struct {
 type ConfigExchange struct {
 	Token        string `mapstructure:"EXCHANGE_TOKEN"`
 	BaseCurrency string `mapstructure:"EXCHANGE_BASE_CURRENCY"`
+}
+
+type ConfigTracing struct {
+	URL string `mapstructure:"TRACING_URL"`
 }
 
 type ConfigDB struct {
@@ -34,6 +39,8 @@ func NewConfig() (cfg *Config, err error) {
 
 	viper.SetDefault("DB_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	viper.SetDefault("DB_TEST_USER_ID", 0)
+
+	viper.SetDefault("TRACING_URL", "http://localhost:14268/api/traces")
 
 	viper.AutomaticEnv()
 
