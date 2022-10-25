@@ -29,6 +29,9 @@ linters-settings:
     max-func-lines: 20
   goimports:
     local-prefixes: gitlab.ozon.dev
+  gomnd:
+    ignored-functions:
+      - "context.WithTimeout"
 
 linters:
   enable:

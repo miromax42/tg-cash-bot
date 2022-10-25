@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os/signal"
 	"runtime"
 	"syscall"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-testfixtures/testfixtures/v3"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.nhat.io/otelsql"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -40,6 +42,7 @@ func main() { //nolint:funlen
 		exchange currency.Exchange
 		srv      *telegram.Server
 		tp       *tracesdk.TracerProvider
+		metricts *http.Server
 	)
 
 	ctx := logtags.AddTag(context.Background(), "golang.version", runtime.Version())
@@ -57,7 +60,6 @@ func main() { //nolint:funlen
 	if tp, err = tracerProvider(cfg.Tracing); err != nil {
 		log.PanicCtx(mainCtx, errors.Wrap(err, "init trace provider"))
 	}
-
 	otel.SetTracerProvider(tp)
 
 	init, initCtx := errgroup.WithContext(mainCtx)
@@ -122,6 +124,17 @@ func main() { //nolint:funlen
 	})
 
 	work.Go(func() error {
+		metricts = &http.Server{Addr: ":2112"} //nolint:gosec
+		http.Handle("/metrics", promhttp.Handler())
+
+		if !errors.Is(metricts.ListenAndServe(), http.ErrServerClosed) {
+			return err
+		}
+
+		return nil
+	})
+
+	work.Go(func() error {
 		<-workCtx.Done()
 
 		srv.Stop()
@@ -136,6 +149,15 @@ func main() { //nolint:funlen
 		defer cancel()
 
 		return tp.Shutdown(tpCtx)
+	})
+
+	work.Go(func() error {
+		<-workCtx.Done()
+
+		sCtx, cancel := context.WithTimeout(ctx, time.Second*5)
+		defer cancel()
+
+		return metricts.Shutdown(sCtx)
 	})
 
 	if err := work.Wait(); err != nil {
