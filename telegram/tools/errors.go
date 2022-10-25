@@ -22,7 +22,6 @@ var (
 	ErrInvalidSetLimit = UserError{
 		Title:         "invalid request",
 		Help:          "use format [/limit <float>]",
-		IsNotExpected: true,
 	}
 	ErrLimitBlockExpense = UserError{
 		Title: "inconsistent request",
