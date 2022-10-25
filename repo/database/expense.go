@@ -10,6 +10,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent/expense"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 )
 
 type Expense struct {
@@ -26,6 +27,8 @@ func (e Expense) CreateExpense(
 	ctx context.Context,
 	req repo.CreateExpenseReq,
 ) (*repo.CreateExpenseResp, error) {
+	metrics.ExpenseCounter.Observe(req.Amount)
+
 	ctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Expense.Create")
 	defer span.End()
 

@@ -5,7 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-const apiName = "telebot"
+const (
+	apiName = "telebot"
+)
 
 var (
 	objectives   = map[float64]float64{0.5: 0.05, 0.75: .025, 0.9: 0.01, 0.95: .005, 0.99: 0.001} //nolint:gomnd
@@ -26,4 +28,14 @@ var (
 		Namespace: apiName,
 		Name:      "requests_error_total",
 	}, handlerLabel)
+
+	ExpenseCounter = promauto.NewHistogram(prometheus.HistogramOpts{
+		Namespace: apiName,
+		Name:      "expenses_amount",
+	})
+
+	WrongUsageCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: apiName,
+		Name:      "wrong_usage_total",
+	})
 )

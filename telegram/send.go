@@ -7,6 +7,7 @@ import (
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 )
 
 func (s *Server) SendError(err error, c tele.Context, e tools.UserError) error {
@@ -15,6 +16,7 @@ func (s *Server) SendError(err error, c tele.Context, e tools.UserError) error {
 	if terr != nil {
 		err = errors.CombineErrors(err, errors.WithHint(terr, "during handling main error"))
 	} else if !e.IsNotExpected {
+		metrics.WrongUsageCounter.Inc()
 		s.logger.WarnCtx(requestContext(c), e.Title)
 
 		return nil
