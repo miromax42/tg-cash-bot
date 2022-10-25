@@ -10,8 +10,9 @@ const (
 )
 
 var (
-	objectives   = map[float64]float64{0.5: 0.05, 0.75: .025, 0.9: 0.01, 0.95: .005, 0.99: 0.001} //nolint:gomnd
-	handlerLabel = []string{"method"}
+	objectives     = map[float64]float64{0.5: 0.05, 0.75: .025, 0.9: 0.01, 0.95: .005, 0.99: 0.001} //nolint:gomnd
+	expenseBuckets = []float64{1, 10, 100, 1000, 5000, 10000, 100000}                               //nolint:gomnd
+	handlerLabel   = []string{"method"}
 
 	RequestOpsProcessed = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: apiName,
@@ -32,6 +33,7 @@ var (
 	ExpenseCounter = promauto.NewHistogram(prometheus.HistogramOpts{
 		Namespace: apiName,
 		Name:      "expenses_amount",
+		Buckets:   expenseBuckets,
 	})
 
 	WrongUsageCounter = promauto.NewCounter(prometheus.CounterOpts{

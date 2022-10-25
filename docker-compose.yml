@@ -9,3 +9,12 @@ services:
       - "./grafana-agent.yml:/etc/agent/agent.yaml"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: test
