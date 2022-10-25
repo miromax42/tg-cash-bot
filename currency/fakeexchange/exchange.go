@@ -1,4 +1,4 @@
-package fake_exchange
+package fakeexchange
 
 import (
 	"context"

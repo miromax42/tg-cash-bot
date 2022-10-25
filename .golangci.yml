@@ -98,6 +98,9 @@ issues:
     - path: generate.go
       linters:
         - lll
+    - path: metrics.go
+      linters:
+        - gochecknoglobals
 
 run:
   timeout: 5m

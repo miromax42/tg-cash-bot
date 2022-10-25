@@ -21,7 +21,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fake_exchange"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fakeexchange"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -84,12 +84,12 @@ func main() { //nolint:funlen
 	})
 
 	init.Go(func() (err error) {
-		exchange = fake_exchange.Exchange{}
+		exchange = fakeexchange.Exchange{}
 
 		return errors.Wrap(err, "exchange")
 	})
 
-	if err := init.Wait(); err != nil {
+	if err = init.Wait(); err != nil {
 		log.PanicfCtx(initCtx, errors.Wrap(err, "init").Error())
 	}
 

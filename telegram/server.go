@@ -8,6 +8,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -64,16 +65,33 @@ func (s *Server) setupRoutes(ctx context.Context) {
 	s.bot.Handle("/ping", func(c tele.Context) error {
 		return s.Send(c, fmt.Sprintf("pong! Your id: %d", c.Sender().ID))
 	})
-	s.bot.Handle("/start", StartHelp)
+	s.bot.Handle("/start", instrumentedHandler("start", StartHelp))
 
-	s.bot.Handle("/exp", s.CreateExpense)
-	s.bot.Handle("/all", s.ListExpenses)
+	s.bot.Handle("/exp", instrumentedHandler("expense_add", s.CreateExpense))
+	s.bot.Handle("/all", instrumentedHandler("expense_list", s.ListExpenses))
 
 	currencySelectorUI, anyButtonUI := getCurrencySelector()
-	s.bot.Handle("/currency", s.SelectCurrency(currencySelectorUI))
-	s.bot.Handle(anyButtonUI, s.SetCurrency)
+	s.bot.Handle("/currency", instrumentedHandler("currency_menu", s.SelectCurrency(currencySelectorUI)))
+	s.bot.Handle(anyButtonUI, instrumentedHandler("currency_set", s.SetCurrency))
 
-	s.bot.Handle("/limit", s.SetLimit)
+	s.bot.Handle("/limit", instrumentedHandler("limit_set", s.SetLimit))
+}
+
+func instrumentedHandler(label string, fn func(c tele.Context) error) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		metrics.RequestOpsProcessed.WithLabelValues(label).Inc()
+
+		err := fn(c)
+		if err != nil {
+			metrics.RequestOpsInternalError.WithLabelValues(label).Inc()
+		}
+
+		metrics.RequestDuration.WithLabelValues(label).Observe(
+			time.Since(c.Message().Time()).Seconds(),
+		)
+
+		return err
+	}
 }
 
 func (s *Server) Start() {

@@ -29,8 +29,6 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 func (s *Server) WithContext(ctx context.Context) func(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			opsProcessed.Inc()
-
 			rctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Telegram.Handler")
 			defer span.End()
 
