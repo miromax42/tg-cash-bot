@@ -1,5 +1,9 @@
-version: 3.8
+version: "3.8"
 
 services:
-  jaeger:
-    image: jaegertracing/all-in-one
+  agent:
+    image: grafana/agent:v0.28.0
+    ports:
+      - "14268:14268"
+    volumes:
+      - "./grafana-agent.yml:/etc/agent/agent.yaml"
