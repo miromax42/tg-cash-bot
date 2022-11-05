@@ -35,7 +35,7 @@ func NewServer(
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: time.Second},
 		OnError: func(err error, c tele.Context) {
-			log.ErrorCtx(requestContext(c), fmt.Sprintf("%+v", err))
+			log.Error(requestContext(c), fmt.Sprintf("%+v", err))
 		},
 	}
 

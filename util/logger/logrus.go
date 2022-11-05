@@ -22,59 +22,59 @@ func NewTest() *Adapter {
 	return &Adapter{l}
 }
 
-func (a *Adapter) DebugfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Debugf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Debugf(format, args...)
 }
 
-func (a *Adapter) InfofCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Infof(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Infof(format, args...)
 }
 
-func (a *Adapter) PrintfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Printf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Printf(format, args...)
 }
 
-func (a *Adapter) WarnfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Warnf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Warnf(format, args...)
 }
 
-func (a *Adapter) ErrorfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Errorf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Errorf(format, args...)
 }
 
-func (a *Adapter) FatalfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Fatalf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Fatalf(format, args...)
 }
 
-func (a *Adapter) PanicfCtx(ctx context.Context, format string, args ...interface{}) {
+func (a *Adapter) Panicf(ctx context.Context, format string, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Panicf(format, args...)
 }
 
-func (a *Adapter) DebugCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Debug(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Debug(args...)
 }
 
-func (a *Adapter) InfoCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Info(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Info(args...)
 }
 
-func (a *Adapter) PrintCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Print(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Print(args...)
 }
 
-func (a *Adapter) WarnCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Warn(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Warn(args...)
 }
 
-func (a *Adapter) ErrorCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Error(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Error(args...)
 }
 
-func (a *Adapter) FatalCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Fatal(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Fatal(args...)
 }
 
-func (a *Adapter) PanicCtx(ctx context.Context, args ...interface{}) {
+func (a *Adapter) Panic(ctx context.Context, args ...interface{}) {
 	a.l.WithFields(mapFromContext(ctx)).Panic(args...)
 }
 

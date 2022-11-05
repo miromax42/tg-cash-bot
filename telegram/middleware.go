@@ -54,7 +54,7 @@ func (s *Server) WithContext(ctx context.Context) func(next tele.HandlerFunc) te
 
 func (s *Server) Logger(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		s.logger.InfoCtx(requestContext(c), "request msg")
+		s.logger.Info(requestContext(c), "request msg")
 
 		return next(c)
 	}

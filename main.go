@@ -54,11 +54,11 @@ func main() { //nolint:funlen
 
 	cfg, err := util.NewConfig()
 	if err != nil {
-		log.PanicCtx(mainCtx, err)
+		log.Panic(mainCtx, err)
 	}
 
 	if tp, err = tracerProvider(cfg.Tracing); err != nil {
-		log.PanicCtx(mainCtx, errors.Wrap(err, "init trace provider"))
+		log.Panic(mainCtx, errors.Wrap(err, "init trace provider"))
 	}
 	otel.SetTracerProvider(tp)
 
@@ -90,7 +90,7 @@ func main() { //nolint:funlen
 	})
 
 	if err = init.Wait(); err != nil {
-		log.PanicfCtx(initCtx, errors.Wrap(err, "init").Error())
+		log.Panicf(initCtx, errors.Wrap(err, "init").Error())
 	}
 
 	work, workCtx := errgroup.WithContext(mainCtx)
@@ -117,7 +117,7 @@ func main() { //nolint:funlen
 			return err
 		}
 
-		log.InfoCtx(workCtx, "bot started")
+		log.Info(workCtx, "bot started")
 		srv.Start()
 
 		return nil
@@ -161,9 +161,9 @@ func main() { //nolint:funlen
 	})
 
 	if err := work.Wait(); err != nil {
-		log.PanicfCtx(workCtx, "gracefull stop: %s \n", err)
+		log.Panicf(workCtx, "gracefull stop: %s \n", err)
 	} else {
-		log.InfoCtx(workCtx, "gracefully stopped!")
+		log.Info(workCtx, "gracefully stopped!")
 	}
 }
 

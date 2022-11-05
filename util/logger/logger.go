@@ -3,19 +3,19 @@ package logger
 import "context"
 
 type Logger interface {
-	DebugfCtx(ctx context.Context, format string, args ...interface{})
-	InfofCtx(ctx context.Context, format string, args ...interface{})
-	PrintfCtx(ctx context.Context, format string, args ...interface{})
-	WarnfCtx(ctx context.Context, format string, args ...interface{})
-	ErrorfCtx(ctx context.Context, format string, args ...interface{})
-	FatalfCtx(ctx context.Context, format string, args ...interface{})
-	PanicfCtx(ctx context.Context, format string, args ...interface{})
+	Debugf(ctx context.Context, format string, args ...interface{})
+	Infof(ctx context.Context, format string, args ...interface{})
+	Printf(ctx context.Context, format string, args ...interface{})
+	Warnf(ctx context.Context, format string, args ...interface{})
+	Errorf(ctx context.Context, format string, args ...interface{})
+	Fatalf(ctx context.Context, format string, args ...interface{})
+	Panicf(ctx context.Context, format string, args ...interface{})
 
-	DebugCtx(ctx context.Context, args ...interface{})
-	InfoCtx(ctx context.Context, args ...interface{})
-	PrintCtx(ctx context.Context, args ...interface{})
-	WarnCtx(ctx context.Context, args ...interface{})
-	ErrorCtx(ctx context.Context, args ...interface{})
-	FatalCtx(ctx context.Context, args ...interface{})
-	PanicCtx(ctx context.Context, args ...interface{})
+	Debug(ctx context.Context, args ...interface{})
+	Info(ctx context.Context, args ...interface{})
+	Print(ctx context.Context, args ...interface{})
+	Warn(ctx context.Context, args ...interface{})
+	Error(ctx context.Context, args ...interface{})
+	Fatal(ctx context.Context, args ...interface{})
+	Panic(ctx context.Context, args ...interface{})
 }

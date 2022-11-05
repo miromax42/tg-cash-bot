@@ -17,7 +17,7 @@ func (s *Server) SendError(err error, c tele.Context, e tools.UserError) error {
 		err = errors.CombineErrors(err, errors.WithHint(terr, "during handling main error"))
 	} else if !e.IsNotExpected {
 		metrics.WrongUsageCounter.Inc()
-		s.logger.WarnCtx(requestContext(c), e.Title)
+		s.logger.Warn(requestContext(c), e.Title)
 
 		return nil
 	}
