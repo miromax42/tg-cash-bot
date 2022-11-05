@@ -1,0 +1,26 @@
+metrics:
+  global:
+    scrape_interval: 10s
+  configs:
+    - name: hosted-prometheus
+      scrape_configs:
+        - job_name: single
+          static_configs:
+            - targets: ['host.docker.internal:2112']
+      remote_write:
+        - url: https://prometheus-prod-09-prod-au-southeast-0.grafana.net/api/prom/push
+          basic_auth:
+            username: 623201
+            password: eyJrIjoiMGJmOTQ5ZmUyNjA4NmNhYzFjZWYwMDViOTRmNWRiMzVkNmYwMDA2YyIsIm4iOiJ0Zy1ib3QtMyIsImlkIjo3MzIxMzd9
+traces:
+  configs:
+    - name: hosted-traces
+      receivers:
+        jaeger:
+          protocols:
+            thrift_http:
+      remote_write:
+        - endpoint: tempo-prod-03-au-southeast-0.grafana.net:443
+          basic_auth:
+            username: 307084
+            password: eyJrIjoiZmNiMTFlNjdmODQzNTgyYjdmZDc1ZDg2OWI4Mjk0YzE2NjdmNGNhZiIsIm4iOiJ0Zy1ib3QtdHJhY2UiLCJpZCI6NzMyMTM3fQ==

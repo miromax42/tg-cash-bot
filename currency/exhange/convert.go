@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
@@ -35,7 +36,10 @@ func (c *Converter) Base() currency.Token {
 	return c.baseCurrency
 }
 
-func (c *Converter) Convert(_ context.Context, req currency.ConvertReq) (amount float64, err error) {
+func (c *Converter) Convert(ctx context.Context, req currency.ConvertReq) (amount float64, err error) {
+	_, span := otel.Tracer(util.RequestTrace).Start(ctx, "Exchange.Convert")
+	defer span.End()
+
 	_, ok1 := c.data[req.To]
 	_, ok2 := c.data[req.From]
 	if !ok1 || !ok2 {

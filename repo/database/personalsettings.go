@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/cockroachdb/errors"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/ent"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
@@ -22,6 +23,9 @@ func NewPersonalSettings(client *ent.Client) *PersonalSettings {
 }
 
 func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSettingsResp, error) {
+	ctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Settings.Get")
+	defer span.End()
+
 	settings, err := p.db.PersonalSettings.Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -38,6 +42,9 @@ func (p *PersonalSettings) Get(ctx context.Context, id int64) (*repo.PersonalSet
 }
 
 func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq) error {
+	ctx, span := otel.Tracer(util.RequestTrace).Start(ctx, "Settings.Set")
+	defer span.End()
+
 	return WithTx(ctx, p.db, func(tx *ent.Tx) error {
 		expenses := NewExpense(p.db)
 		sum, err := expenses.allUserExpense(ctx, repo.ListUserExpenseReq{

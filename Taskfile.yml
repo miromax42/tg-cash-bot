@@ -22,6 +22,7 @@ tasks:
     sources:
       - ./**/*.go
     cmds:
+      - rm -rf ./mocks
       - go generate ./...
 
   test: go test --coverprofile=coverage.out ./... -short
@@ -51,14 +52,13 @@ tasks:
 
   docker-prepare:
     cmds:
-      - docker stop tele-postgres
-      - docker rm tele-postgres
+      - docker compose down
     ignore_error: true
 
   docker:
     deps: [docker-prepare]
     cmds:
-      - docker run --name tele-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=test -p 5432:5432 -d postgres
+      - docker compose up -d
 
   start-new:
     deps: [docker,gen]

@@ -16,6 +16,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/mocks"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 )
 
 type HandlersTestSuite struct {
@@ -28,7 +29,7 @@ func TestRedisTestSuite(t *testing.T) {
 
 func (s *HandlersTestSuite) getServerWithMocks() *Server {
 	return &Server{
-		logger:       mocks.NewLogger(s.T()),
+		logger:       logger.NewTest(),
 		expense:      mocks.NewExpense(s.T()),
 		userSettings: mocks.NewPersonalSettings(s.T()),
 		exchange:     mocks.NewExchange(s.T()),

@@ -2,16 +2,13 @@ package tools
 
 import (
 	"strings"
-
-	"github.com/cockroachdb/errors"
-	tele "gopkg.in/telebot.v3"
 )
 
 var (
 	ErrInternal = UserError{
 		Title:         "unexpected error",
 		Help:          "you have found a bug, report it plz",
-		isNotExpected: true,
+		IsNotExpected: true,
 	}
 
 	ErrInvalidCreateExpense = UserError{
@@ -39,7 +36,7 @@ var (
 type UserError struct {
 	Title         string
 	Help          string
-	isNotExpected bool
+	IsNotExpected bool
 
 	internal error
 }
@@ -54,19 +51,8 @@ func (e UserError) Error() string {
 	return b.String()
 }
 
-func (e UserError) with(internal error) UserError {
+func (e UserError) With(internal error) UserError {
 	e.internal = internal
 
 	return e
-}
-
-func SendError(err error, c tele.Context, e UserError) error {
-	terr := c.Send(e.with(err).Error())
-	if terr != nil {
-		err = errors.CombineErrors(err, errors.WithHint(terr, "during handling main error"))
-	} else if !e.isNotExpected {
-		return nil
-	}
-
-	return err
 }
