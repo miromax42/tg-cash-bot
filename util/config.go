@@ -34,10 +34,10 @@ type ConfigDB struct {
 }
 
 type ConfigCache struct {
-	Redis        ConfigRedis   `mapstructure:",squash"`
-	TTL          time.Duration `mapstructure:"CACHE_TTL"`
-	ObjectsCount int           `mapstructure:"CACHE_OBJECTS_COUNT"`
-	ObjectTTL    time.Duration `mapstructure:"CACHE_OBJECT_TTL"`
+	Redis             ConfigRedis   `mapstructure:",squash"`
+	LocalTTL          time.Duration `mapstructure:"CACHE_LOCAL_TTL"`
+	LocalObjectsCount int           `mapstructure:"CACHE_LOCAL_OBJECTS_COUNT"`
+	RedisTTL          time.Duration `mapstructure:"CACHE_REDIS_TTL"`
 }
 
 type ConfigRedis struct {
@@ -56,12 +56,11 @@ func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("DB_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	viper.SetDefault("DB_TEST_USER_ID", 0)
 
-	viper.SetDefault("CACHE_TTL", time.Minute)
-	viper.SetDefault("CACHE_OBJECTS_COUNT", 10000)
-	viper.SetDefault("CACHE_OBJECT_TTL", time.Hour)
+	viper.SetDefault("CACHE_LOCAL_OBJECTS_COUNT", 10000)
+	viper.SetDefault("CACHE_LOCAL_TTL", time.Minute)
+	viper.SetDefault("CACHE_REDIS_TTL", time.Hour)
 	viper.SetDefault("REDIS_SOCKET_ADDRESS", "localhost:6379")
 	viper.SetDefault("REDIS_DB", 0)
-	viper.SetDefault("REDIS_KEY_TTL", time.Minute)
 
 	viper.SetDefault("TRACING_URL", "http://localhost:14268/api/traces")
 

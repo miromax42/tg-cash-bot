@@ -17,7 +17,7 @@ type Cache struct {
 	client *redis.Client
 	cch    *rcache.Cache
 
-	objectTTL time.Duration
+	redisTTl time.Duration
 }
 
 func NewCache(ctx context.Context, cfg util.ConfigCache) (*Cache, error) {
@@ -34,13 +34,13 @@ func NewCache(ctx context.Context, cfg util.ConfigCache) (*Cache, error) {
 
 	rcch := rcache.New(&rcache.Options{
 		Redis:      rdb,
-		LocalCache: rcache.NewTinyLFU(cfg.ObjectsCount, cfg.TTL),
+		LocalCache: rcache.NewTinyLFU(cfg.LocalObjectsCount, cfg.LocalTTL),
 	})
 
 	return &Cache{
-		client:    rdb,
-		cch:       rcch,
-		objectTTL: cfg.ObjectTTL,
+		client:   rdb,
+		cch:      rcch,
+		redisTTl: cfg.RedisTTL,
 	}, nil
 }
 
@@ -66,7 +66,7 @@ func (c *Cache) Set(ctx context.Context, key cache.Token, value interface{}) err
 		Ctx:   ctx,
 		Key:   string(key),
 		Value: value,
-		TTL:   c.objectTTL,
+		TTL:   c.redisTTl,
 	})
 
 	return errors.Wrapf(err, "set %q", string(key))

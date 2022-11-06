@@ -29,9 +29,9 @@ func (s *CacheTestSuite) SetupSuite() {
 		Redis: util.ConfigRedis{
 			SocketAddr: rediscontainer.GetRedisConnectionString(s.T()),
 		},
-		TTL:          time.Minute,
-		ObjectsCount: 100,
-		ObjectTTL:    time.Hour,
+		LocalTTL:          time.Minute,
+		LocalObjectsCount: 100,
+		RedisTTL:          time.Hour,
 	})
 	require.NoError(s.T(), err)
 }
