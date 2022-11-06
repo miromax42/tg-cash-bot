@@ -75,7 +75,7 @@ func getDB(t *testing.T) (db *ent.Client, url string) {
 	require.NoError(t, err)
 
 	err = db.Schema.Create(context.Background())
-	require.NoError(t, err)
+	require.NoErrorf(t, err, "connectionString=%q", connectionString)
 
 	return db, connectionString
 }

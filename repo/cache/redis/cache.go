@@ -29,7 +29,7 @@ func NewCache(ctx context.Context, cfg util.ConfigCache) (*Cache, error) {
 
 	err := rdb.Ping(ctx).Err()
 	if err != nil {
-		return nil, errors.Wrap(err, "ping redis")
+		return nil, errors.Wrapf(err, "ping redis on %q", cfg.Redis.SocketAddr)
 	}
 
 	rcch := rcache.New(&rcache.Options{
