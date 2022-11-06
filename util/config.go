@@ -46,6 +46,7 @@ type ConfigRedis struct {
 	DB         int    `mapstructure:"REDIS_DB"`
 }
 
+//nolint:nakedret
 func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("TLG_TOKEN", "")
 
