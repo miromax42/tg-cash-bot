@@ -18,3 +18,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: test
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"

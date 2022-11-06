@@ -22,6 +22,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fakeexchange"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache/redis"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -39,6 +40,7 @@ import (
 func main() { //nolint:funlen
 	var (
 		db       *ent.Client
+		cache    *redis.Cache
 		exchange currency.Exchange
 		srv      *telegram.Server
 		tp       *tracesdk.TracerProvider
@@ -89,6 +91,12 @@ func main() { //nolint:funlen
 		return errors.Wrap(err, "exchange")
 	})
 
+	init.Go(func() (err error) {
+		cache, err = redis.NewCache(initCtx, cfg.Cache)
+
+		return errors.Wrap(err, "cache")
+	})
+
 	if err = init.Wait(); err != nil {
 		log.Panicf(initCtx, errors.Wrap(err, "init").Error())
 	}
@@ -112,7 +120,7 @@ func main() { //nolint:funlen
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
 
-		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, expense, personalSettings, exchange)
+		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, expense, personalSettings, cache, exchange)
 		if err != nil {
 			return err
 		}

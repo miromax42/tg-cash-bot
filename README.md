@@ -60,8 +60,10 @@
   > Ссылка приглашение в workspace(дашборд, трейсы, метрики) по запросу кину на почту.
 
 ### GOHW-6
-- [ ] Если пользователь уже запрашивал отчет за конкретный период, то возвращать расходы по нему из кэша
-- [ ] Для кэширования использовать Redis
+- [x] Настройки пользователя(лимит, валюта) кешировать
+- [x] Для кэширования использовать Redis или LFU
+  > Двухуровневый кеш: instance level - LFU (с коротким TTL), distributed cache - Redis
+- [x] Доп: метрики cache_hit, cache_miss
 
 ## Граф зависимостей
 ![dependency graph](https://gitlab.ozon.dev/miromaxxs/telegram-bot/-/jobs/artifacts/master/raw/godepgraph.png?job=dependency-graph)

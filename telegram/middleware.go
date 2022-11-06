@@ -3,11 +3,14 @@ package telegram
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/logtags"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	tele "gopkg.in/telebot.v3"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
@@ -15,12 +18,31 @@ import (
 // Authentication automatically sets user settings to context
 func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		settings, err := s.userSettings.Get(requestContext(c), c.Sender().ID)
-		if err != nil || settings == nil {
-			return s.SendError(err, c, tools.ErrInternal)
+		var (
+			ctx       = requestContext(c)
+			userID    = c.Sender().ID
+			userToken = cache.UserSettingsToken(userID)
+
+			userSettings repo.PersonalSettingsResp
+		)
+
+		err := s.dbCache.Get(ctx, userToken, &userSettings)
+		if err != nil {
+			if errors.Is(err, cache.ErrMiss) {
+				settings, err := s.userSettings.Get(ctx, userID) //nolint:govet
+				if err != nil || settings == nil {
+					return s.SendError(err, c, tools.ErrInternal)
+				}
+
+				if err := s.dbCache.Set(ctx, userToken, settings); err != nil {
+					return s.SendError(err, c, tools.ErrInternal)
+				}
+
+				userSettings = *settings
+			}
 		}
 
-		c.Set(SettingsKey.String(), settings)
+		c.Set(SettingsKey.String(), userSettings)
 
 		return next(c)
 	}
@@ -59,4 +81,22 @@ func (s *Server) Logger(next tele.HandlerFunc) tele.HandlerFunc {
 		return next(c)
 	}
 
+}
+
+func (s *Server) DropUserSettingsCache(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		var (
+			ctx       = requestContext(c)
+			userToken = cache.UserSettingsToken(c.Sender().ID)
+		)
+
+		err := next(c)
+		if err != nil {
+			return err
+		}
+
+		err = s.dbCache.Del(ctx, userToken)
+
+		return errors.Wrapf(err, "delete key %q", string(userToken))
+	}
 }
