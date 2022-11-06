@@ -93,7 +93,12 @@
 * `EXCHANGE_TOKEN`- токен для [сервиса получения курсов валют](https://apilayer.com/marketplace/fixer-api)
 * `EXCHANGE_BASE_CURRENCY` - код дефолтной валюты (USD, CNY, EUR, RUB)
 * `DB_URL` - postgres URL (по-умолчанию `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`)
-* `DB_TEST_USER_ID` - telegram ID юзера для которого создадутся тестовые данные (выставлять только в тестовой среде)
+* `CACHE_LOCAL_TTL` - время жизни ключа в локальном Кеше
+* `CACHE_LOCAL_OBJECTS_COUNT` - количество ключей в LFU Кеше
+* `CACHE_REDIS_TTL` - время жизни ключа в Кеше Redis
+* `REDIS_SOCKET_ADDRESS` - адрес сокета Redis
+* `REDIS_PASSWORD` - пароль от Redis
+* `REDIS_DB` - номер БД Redis
 
 ## Выбор библиотек
 * `taskfile` - лучше чем Makefile во всем
