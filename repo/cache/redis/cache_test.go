@@ -22,14 +22,12 @@ type CacheTestSuite struct {
 }
 
 func (s *CacheTestSuite) SetupSuite() {
-	container := rediscontainer.NewTestRedis(s.T())
-
 	s.ctx = context.Background()
 
 	var err error
 	s.testCache, err = NewCache(s.ctx, util.ConfigCache{
 		Redis: util.ConfigRedis{
-			SocketAddr: container.ConnectionSocketAddress(s.T()),
+			SocketAddr: rediscontainer.GetRedisConnectionString(s.T()),
 		},
 		TTL:          time.Minute,
 		ObjectsCount: 100,
