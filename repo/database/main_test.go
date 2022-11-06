@@ -65,7 +65,6 @@ func getDB(t *testing.T) (db *ent.Client, url string) {
 		require.True(t, ok)
 
 		connectionString = fmt.Sprintf("postgresql://%s:%s@%s:5432/postgres?sslmode=disable", user, password, host)
-
 	} else {
 		container, err := db_container_test.NewTestDatabase()
 		require.NoError(t, err)

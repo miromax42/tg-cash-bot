@@ -10,8 +10,6 @@
   services:
     - name: redis:6-alpine
       alias: redis-ci
-  variables:
-    REDIS_SOCKET_ADDRESS: redis-ci:6376
 
 default:
   image: golang:latest
@@ -33,6 +31,8 @@ test:
   extends:
     - .postgres_service
     - .redis_service
+  variables:
+    REDIS_SOCKET_ADDRESS: redis-ci:6376
   script:
     - task ci:test
 
