@@ -91,6 +91,8 @@ issues:
         - gochecknoglobals
         - funlen
         - varnamelen
+        - containedctx
+        - revive
     - path: config.go
       linters:
         - dogsled
