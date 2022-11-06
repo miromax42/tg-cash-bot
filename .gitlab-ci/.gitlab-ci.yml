@@ -7,7 +7,7 @@
     POSTGRES_PASSWORD: pass-ci
     POSTGRES_HOSTNAME: postgres-ci
 .redis_service:
-  service:
+  services:
     - name: redis:6-alpine
       alias: redis-ci
   variables:
