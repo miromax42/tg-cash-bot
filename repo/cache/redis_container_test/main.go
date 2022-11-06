@@ -3,6 +3,7 @@ package redis_container
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -46,5 +47,12 @@ func (db *TestRedis) Port(t *testing.T) int {
 }
 
 func (db *TestRedis) ConnectionSocketAddress(t *testing.T) string {
+	if _, ok := os.LookupEnv("CI_PROJECT_ID"); ok {
+		connStr, ok := os.LookupEnv("REDIS_SOCKET_ADDRESS")
+		require.True(t, ok)
+
+		return connStr
+	}
+
 	return fmt.Sprintf("127.0.0.1:%d", db.Port(t))
 }

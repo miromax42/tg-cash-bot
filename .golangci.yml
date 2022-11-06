@@ -32,6 +32,7 @@ linters-settings:
   gomnd:
     ignored-functions:
       - "context.WithTimeout"
+      - "strconv.FormatInt"
 
 linters:
   enable:
