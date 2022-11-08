@@ -9,6 +9,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f
 	github.com/envoyproxy/protoc-gen-validate v0.9.0
 	github.com/go-testfixtures/testfixtures/v3 v3.8.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.13.0
 	github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8
 	github.com/lib/pq v1.10.6

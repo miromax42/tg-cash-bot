@@ -7,8 +7,8 @@ import "validate/validate.proto";
 option go_package = "gitlab.ozon.dev/miromaxxs/telegram-bot/pb";
 
 message SendMessageRequest {
-  string message = 1 [(validate.rules).string = { min_len: 3, max_len: 100 }];
-  int64  user_id = 2 [(validate.rules).int64 = { gt: 0 }];
+  int64  user_id = 1 [(validate.rules).int64 = { gt: 0 }];
+  string message = 2 [(validate.rules).string = { min_len: 3, max_len: 100 }];
 }
 
 message SendMessageResponse {

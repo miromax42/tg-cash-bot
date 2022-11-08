@@ -60,12 +60,12 @@
     "pbSendMessageRequest": {
       "type": "object",
       "properties": {
-        "message": {
-          "type": "string"
-        },
         "userId": {
           "type": "string",
           "format": "int64"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },

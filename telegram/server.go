@@ -27,21 +27,13 @@ func NewServer(
 	ctx context.Context,
 	cfg util.ConfigTelegram,
 	log logger.Logger,
+	bot *tele.Bot,
 	expense repo.Expense,
 	userSettings repo.PersonalSettings,
 	exchange currency.Exchange,
 ) (*Server, error) {
-	pref := tele.Settings{
-		Token:  cfg.Token,
-		Poller: &tele.LongPoller{Timeout: time.Second},
-		OnError: func(err error, c tele.Context) {
-			log.Error(requestContext(c), fmt.Sprintf("%+v", err))
-		},
-	}
-
-	bot, err := tele.NewBot(pref)
-	if err != nil {
-		return nil, err
+	bot.OnError = func(err error, c tele.Context) {
+		log.Error(requestContext(c), fmt.Sprintf("%+v", err))
 	}
 
 	srv := &Server{

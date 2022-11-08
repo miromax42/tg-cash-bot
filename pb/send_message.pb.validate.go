@@ -57,10 +57,10 @@ func (m *SendMessageRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetMessage()); l < 3 || l > 100 {
+	if m.GetUserId() <= 0 {
 		err := SendMessageRequestValidationError{
-			field:  "Message",
-			reason: "value length must be between 3 and 100 runes, inclusive",
+			field:  "UserId",
+			reason: "value must be greater than 0",
 		}
 		if !all {
 			return err
@@ -68,10 +68,10 @@ func (m *SendMessageRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetUserId() <= 0 {
+	if l := utf8.RuneCountInString(m.GetMessage()); l < 3 || l > 100 {
 		err := SendMessageRequestValidationError{
-			field:  "UserId",
-			reason: "value must be greater than 0",
+			field:  "Message",
+			reason: "value length must be between 3 and 100 runes, inclusive",
 		}
 		if !all {
 			return err
