@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "send_message.proto";
+
+option go_package = "gitlab.ozon.dev/miromaxxs/telegram-bot/pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Telegram expense-bot API";
+version: "0.1";
+contact: {
+name:
+  "Maxim Miroshichencko";
+url:
+  "https://miromax42.github.io";
+email:
+  "miromaxxs@gmail.com";
+};
+}
+;
+}
+;
+
+service BotSend {
+  rpc SendReport(SendMessageRequest) returns (SendMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/send_report"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Description Send Report";
+  summary:
+    "Summary: SendReport rpc";
+  };
+}
+}
