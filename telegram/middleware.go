@@ -39,7 +39,12 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 				}
 
 				userSettings = *settings
+			} else {
+				_ = s.SendError(err, c, tools.ErrInternal)
+
+				return errors.Wrapf(err, "cache")
 			}
+
 		}
 
 		c.Set(SettingsKey.String(), userSettings)
