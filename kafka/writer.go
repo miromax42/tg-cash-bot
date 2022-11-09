@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	kf "github.com/segmentio/kafka-go"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
@@ -22,5 +23,8 @@ func NewWriter(topic string, cfg util.ConfigKafka) *Writer {
 }
 
 func (w *Writer) SendBytes(ctx context.Context, value []byte) error {
-	return w.kr.WriteMessages(ctx, kf.Message{Value: value})
+	return errors.Wrapf(
+		w.kr.WriteMessages(ctx, kf.Message{Value: value}),
+		"kafka",
+	)
 }

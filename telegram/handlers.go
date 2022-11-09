@@ -1,11 +1,11 @@
 package telegram
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	tele "gopkg.in/telebot.v3"
 
@@ -87,12 +87,16 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return s.reportSender.ReportSend(requestContext(c), &pb.ReportRequest{
+	if err := s.reportSender.ReportSend(requestContext(c), &pb.ReportRequest{
 		UserId:     c.Sender().ID,
 		StartTime:  timestamppb.New(req.FromTime),
 		EndTime:    timestamppb.Now(),
 		Multiplier: multiplier,
-	})
+	}); err != nil {
+		return errors.Wrapf(err, "report send")
+	}
+
+	return nil
 }
 
 func (s *Server) SelectCurrency(reply *tele.ReplyMarkup) func(c tele.Context) error {
