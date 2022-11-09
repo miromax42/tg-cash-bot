@@ -126,6 +126,17 @@ func (m *ReportRequest) validate(all bool) error {
 		}
 	}
 
+	if m.GetMultiplier() <= 0 {
+		err := ReportRequestValidationError{
+			field:  "Multiplier",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return ReportRequestMultiError(errors)
 	}

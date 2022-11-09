@@ -11,4 +11,5 @@ message ReportRequest {
   int64                     user_id    = 1 [(validate.rules).int64 = { gt: 0 }];
   google.protobuf.Timestamp start_time = 2;
   google.protobuf.Timestamp end_time   = 3;
+  double                    multiplier = 4 [(validate.rules).double = { gt: 0 }];
 }

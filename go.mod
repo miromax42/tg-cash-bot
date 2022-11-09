@@ -14,8 +14,10 @@ require (
 	github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8
 	github.com/lib/pq v1.10.6
 	github.com/mattn/go-sqlite3 v1.14.14
+	github.com/miromax42/learn-kafka v0.0.0-20221018192326-1fd6bafc15b3
 	github.com/prometheus/client_golang v1.13.0
 	github.com/rakyll/statik v0.1.7
+	github.com/segmentio/kafka-go v0.4.38
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
@@ -79,6 +81,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
@@ -101,6 +104,7 @@ require (
 	github.com/opencontainers/runc v1.1.3 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pingcap/errors v0.11.5-0.20210425183316-da1aaba5fb63 // indirect
 	github.com/pingcap/log v0.0.0-20210625125904-98ed8e2eb1c7 // indirect
 	github.com/pingcap/tidb/parser v0.0.0-20220817134052-9709249e523a // indirect

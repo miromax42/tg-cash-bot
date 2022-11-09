@@ -36,6 +36,8 @@ import (
 	_ "gitlab.ozon.dev/miromaxxs/telegram-bot/doc/statik"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/gapi"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
+	kafkasender "gitlab.ozon.dev/miromaxxs/telegram-bot/sender/kafka"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -52,11 +54,12 @@ import (
 
 func main() { //nolint:funlen
 	var (
-		bot      *tele.Bot
-		db       *ent.Client
-		exchange currency.Exchange
-		srv      *telegram.Server
-		tp       *tracesdk.TracerProvider
+		bot          *tele.Bot
+		db           *ent.Client
+		exchange     currency.Exchange
+		srv          *telegram.Server
+		tp           *tracesdk.TracerProvider
+		reportSender sender.ReportSender
 	)
 
 	ctx := logtags.AddTag(context.Background(), "golang.version", runtime.Version())
@@ -109,6 +112,12 @@ func main() { //nolint:funlen
 		return errors.Wrap(err, "telegram")
 	})
 
+	init.Go(func() (err error) {
+		reportSender = kafkasender.NewWriter(cfg.Kafka)
+
+		return nil
+	})
+
 	if err = init.Wait(); err != nil {
 		log.Panicf(initCtx, errors.Wrap(err, "init").Error())
 	}
@@ -132,7 +141,7 @@ func main() { //nolint:funlen
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
 
-		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, bot, expense, personalSettings, exchange)
+		srv, err = telegram.NewServer(workCtx, log, bot, expense, personalSettings, exchange, reportSender)
 		if err != nil {
 			return err
 		}

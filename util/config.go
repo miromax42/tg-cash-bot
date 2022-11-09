@@ -13,6 +13,7 @@ type Config struct {
 	Tracing  ConfigTracing  `mapstructure:",squash"`
 	HTTP     ConfigHTTP     `mapstructure:",squash"`
 	GRPC     ConfigGRPC     `mapstructure:",squash"`
+	Kafka    ConfigKafka    `mapstructure:",squash"`
 }
 
 type ConfigTelegram struct {
@@ -42,6 +43,10 @@ type ConfigGRPC struct {
 	Address string `mapstructure:"GRPC_SERVER_ADDRESS"`
 }
 
+type ConfigKafka struct {
+	Address string `mapstructure:"KAFKA_ADDRESS"`
+}
+
 func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("TLG_TOKEN", "")
 
@@ -57,6 +62,8 @@ func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("HTTP_METRICS_PORT", 2112)
 	viper.SetDefault("GRPC_SERVER_ADDRESS", "0.0.0.0:50051")
 
+	viper.SetDefault("KAFKA_ADDRESS", "localhost:9092")
+
 	viper.AutomaticEnv()
 
 	cfg = &Config{}
@@ -64,5 +71,5 @@ func NewConfig() (cfg *Config, err error) {
 		return nil, fmt.Errorf("config unmarchal: %w", err)
 	}
 
-	return
+	return cfg, nil
 }

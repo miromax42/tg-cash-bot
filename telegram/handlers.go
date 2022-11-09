@@ -6,9 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 )
@@ -76,16 +78,6 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInvalidListExpense)
 	}
 
-	databaseReq := repo.ListUserExpenseReq{
-		UserID:   req.UserID,
-		FromTime: req.FromTime,
-	}
-
-	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
-	if err != nil {
-		return s.SendError(err, c, tools.ErrInternal)
-	}
-
 	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
 		Amount: oneCoin,
 		From:   s.exchange.Base(),
@@ -95,7 +87,12 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	return s.Send(c, ListExpensesAnswer(resp, multiplier))
+	return s.reportSender.ReportSend(requestContext(c), &pb.ReportRequest{
+		UserId:     c.Sender().ID,
+		StartTime:  timestamppb.New(req.FromTime),
+		EndTime:    timestamppb.Now(),
+		Multiplier: multiplier,
+	})
 }
 
 func (s *Server) SelectCurrency(reply *tele.ReplyMarkup) func(c tele.Context) error {

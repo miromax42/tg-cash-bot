@@ -7,12 +7,12 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/util"
 )
 
 type Server struct {
@@ -21,16 +21,17 @@ type Server struct {
 	expense      repo.Expense
 	userSettings repo.PersonalSettings
 	exchange     currency.Exchange
+	reportSender sender.ReportSender
 }
 
 func NewServer(
 	ctx context.Context,
-	cfg util.ConfigTelegram,
 	log logger.Logger,
 	bot *tele.Bot,
 	expense repo.Expense,
 	userSettings repo.PersonalSettings,
 	exchange currency.Exchange,
+	reportSender sender.ReportSender,
 ) (*Server, error) {
 	bot.OnError = func(err error, c tele.Context) {
 		log.Error(requestContext(c), fmt.Sprintf("%+v", err))
@@ -42,6 +43,7 @@ func NewServer(
 		expense:      expense,
 		userSettings: userSettings,
 		exchange:     exchange,
+		reportSender: reportSender,
 	}
 
 	srv.setupRoutes(ctx)
