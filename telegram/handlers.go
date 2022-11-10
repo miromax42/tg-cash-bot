@@ -1,15 +1,16 @@
 package telegram
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 )
 
@@ -79,9 +80,23 @@ func (s *Server) ListExpenses(c tele.Context) error {
 
 	databaseReq := req.ToDB()
 
-	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
+	var resp repo.ListUserExpenseResp
+	err = s.dbCache.Get(requestContext(c), cache.UserReportToken(databaseReq), &resp)
 	if err != nil {
-		return s.SendError(err, c, tools.ErrInternal)
+		if errors.Is(err, cache.ErrMiss) {
+			resp, err = s.expense.ListUserExpense(requestContext(c), databaseReq)
+			if err != nil {
+				return s.SendError(err, c, tools.ErrInternal)
+			}
+
+			if err = s.dbCache.Set(requestContext(c), cache.UserReportToken(databaseReq), resp); err != nil {
+				return s.SendError(err, c, tools.ErrInternal)
+			}
+		} else {
+			_ = s.SendError(err, c, tools.ErrInternal)
+
+			return errors.Wrapf(err, "cache")
+		}
 	}
 
 	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
