@@ -97,6 +97,7 @@ func (e Expense) allUserExpense(ctx context.Context, req repo.ListUserExpenseReq
 		Select(expense.FieldAmount).
 		Where(expense.CreatedBy(req.UserID)).
 		Where(expense.CreateTimeGTE(req.FromTime)).
+		Where(expense.CreateTimeLT(req.ToTime)).
 		GroupBy(expense.FieldCreatedBy).
 		Aggregate(ent.Sum(expense.FieldAmount)).
 		Scan(ctx, &result); err != nil {

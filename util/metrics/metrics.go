@@ -40,4 +40,14 @@ var (
 		Namespace: apiName,
 		Name:      "wrong_usage_total",
 	})
+
+	CacheMissCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: apiName,
+		Name:      "cache_miss_counter",
+	})
+
+	CacheHitCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: apiName,
+		Name:      "cache_hit_counter",
+	})
 )
