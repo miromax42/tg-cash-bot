@@ -68,6 +68,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 type ListUserExpenseReq struct {
 	UserID   int64
 	FromTime time.Time
+	ToTime   *time.Time
 }
 
 func (s *Server) ListExpenses(c tele.Context) error {
@@ -76,10 +77,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInvalidListExpense)
 	}
 
-	databaseReq := repo.ListUserExpenseReq{
-		UserID:   req.UserID,
-		FromTime: req.FromTime,
-	}
+	databaseReq := req.ToDB()
 
 	resp, err := s.expense.ListUserExpense(requestContext(c), databaseReq)
 	if err != nil {

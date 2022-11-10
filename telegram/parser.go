@@ -52,15 +52,31 @@ func NewCreateExpenseReq(c tele.Context) (CreateExpenseReq, error) {
 
 func NewListUserExpenseReq(c tele.Context) (ListUserExpenseReq, error) {
 	const (
-		awaitedArgs = 1
+		yyyymmddLayout = "2006-01-02"
 
 		hoursInDay   = 24
 		hoursInWeek  = hoursInDay * 7
 		hoursInMonth = hoursInWeek * 30
 		hoursInYear  = 8760
 	)
-	if len(c.Args()) != awaitedArgs {
+	if len(c.Args()) == 0 || len(c.Args()) > 2 {
 		return ListUserExpenseReq{}, ErrArgsCount
+	}
+
+	if len(c.Args()) == 2 {
+		startDate, err1 := time.Parse(yyyymmddLayout, c.Args()[0])
+		endDate, err2 := time.Parse(yyyymmddLayout, c.Args()[1])
+
+		err := errors.CombineErrors(err1, err2)
+		if err != nil {
+			return ListUserExpenseReq{}, errors.WithHintf(ErrValidation, "not in format %q", yyyymmddLayout)
+		}
+
+		return ListUserExpenseReq{
+			UserID:   c.Sender().ID,
+			FromTime: startDate,
+			ToTime:   &endDate,
+		}, nil
 	}
 
 	durationToken := c.Args()[0]

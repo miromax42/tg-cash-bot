@@ -47,7 +47,7 @@ func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 
 		}
 
-		c.Set(SettingsKey.String(), userSettings)
+		c.Set(SettingsKey.String(), &userSettings)
 
 		return next(c)
 	}
