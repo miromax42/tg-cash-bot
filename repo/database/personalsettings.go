@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/cockroachdb/errors"
@@ -50,6 +51,7 @@ func (p *PersonalSettings) Set(ctx context.Context, req repo.PersonalSettingsReq
 		sum, err := expenses.allUserExpense(ctx, repo.ListUserExpenseReq{
 			UserID:   req.UserID,
 			FromTime: util.TimeMonthAgo(),
+			ToTime:   time.Now(),
 		})
 		if err != nil {
 			return errors.Wrap(err, "get sum expenses")

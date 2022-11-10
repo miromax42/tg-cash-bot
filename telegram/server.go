@@ -7,7 +7,6 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 
@@ -20,6 +19,7 @@ type Server struct {
 	bot          *tele.Bot
 	expense      repo.Expense
 	userSettings repo.PersonalSettings
+	dbCache      cache.Cache
 	exchange     currency.Exchange
 	reportSender sender.ReportSender
 }
@@ -30,6 +30,7 @@ func NewServer(
 	bot *tele.Bot,
 	expense repo.Expense,
 	userSettings repo.PersonalSettings,
+	dbCache cache.Cache,
 	exchange currency.Exchange,
 	reportSender sender.ReportSender,
 ) (*Server, error) {
@@ -55,6 +56,8 @@ func (s *Server) setupRoutes(ctx context.Context) {
 	s.bot.Use(s.WithContext(ctx))
 	s.bot.Use(s.Logger)
 	s.bot.Use(s.Authentication)
+	settingsChange := s.bot.Group()
+	settingsChange.Use(s.DropUserSettingsCache)
 
 	s.bot.Handle("/ping", func(c tele.Context) error {
 		return s.Send(c, fmt.Sprintf("pong! Your id: %d", c.Sender().ID))
@@ -66,9 +69,9 @@ func (s *Server) setupRoutes(ctx context.Context) {
 
 	currencySelectorUI, anyButtonUI := getCurrencySelector()
 	s.bot.Handle("/currency", instrumentedHandler("currency_menu", s.SelectCurrency(currencySelectorUI)))
-	s.bot.Handle(anyButtonUI, instrumentedHandler("currency_set", s.SetCurrency))
+	settingsChange.Handle(anyButtonUI, instrumentedHandler("currency_set", s.SetCurrency))
 
-	s.bot.Handle("/limit", instrumentedHandler("limit_set", s.SetLimit))
+	settingsChange.Handle("/limit", instrumentedHandler("limit_set", s.SetLimit))
 }
 
 func instrumentedHandler(label string, fn func(c tele.Context) error) func(c tele.Context) error {

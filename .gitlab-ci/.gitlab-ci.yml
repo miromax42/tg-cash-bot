@@ -1,11 +1,14 @@
-.postgres_template: &postgres_service
+.services: &services
   services:
     - name: postgres:latest
       alias: postgres-ci
+    - name: redis:6-alpine
+      alias: redis-ci
   variables:
     POSTGRES_USER: user-ci
     POSTGRES_PASSWORD: pass-ci
     POSTGRES_HOSTNAME: postgres-ci
+    REDIS_SOCKET_ADDRESS: redis-ci:6379
 
 default:
   image: golang:latest
@@ -24,9 +27,9 @@ build:
 
 test:
   stage: test
+  <<: *services
   script:
     - task ci:test
-  <<: *postgres_service
 
 lint:
   stage: test
@@ -35,9 +38,9 @@ lint:
 
 migration-verify:
   stage: test
+  <<: *services
   script:
     - task ci:migration-verify
-  <<: *postgres_service
 
 dependency-graph:
   stage: generate

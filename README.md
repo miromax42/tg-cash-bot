@@ -59,6 +59,12 @@
 - [x] Доп: Создать рабочий дашборд с несколькими панелями в Графане. 
   > Ссылка приглашение в workspace(дашборд, трейсы, метрики) по запросу кину на почту.
 
+### GOHW-6
+- [x] Настройки пользователя(лимит, валюта) кешировать
+- [x] Для кэширования использовать Redis или LFU
+  > Двухуровневый кеш: instance level - LFU (с коротким TTL), distributed cache - Redis
+- [x] Доп: метрики cache_hit, cache_miss
+
 ### GOHW-7
 - [ ] Добавить сервис по построению произвольных отчетов вашего бота.
 ```text
@@ -103,7 +109,12 @@
 * `EXCHANGE_TOKEN`- токен для [сервиса получения курсов валют](https://apilayer.com/marketplace/fixer-api)
 * `EXCHANGE_BASE_CURRENCY` - код дефолтной валюты (USD, CNY, EUR, RUB)
 * `DB_URL` - postgres URL (по-умолчанию `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`)
-* `DB_TEST_USER_ID` - telegram ID юзера для которого создадутся тестовые данные (выставлять только в тестовой среде)
+* `CACHE_LOCAL_TTL` - время жизни ключа в локальном Кеше
+* `CACHE_LOCAL_OBJECTS_COUNT` - количество ключей в LFU Кеше
+* `CACHE_REDIS_TTL` - время жизни ключа в Кеше Redis
+* `REDIS_SOCKET_ADDRESS` - адрес сокета Redis
+* `REDIS_PASSWORD` - пароль от Redis
+* `REDIS_DB` - номер БД Redis
 
 ## Выбор библиотек
 * `taskfile` - лучше чем Makefile во всем
@@ -132,11 +143,12 @@
 
 ---
 ### Отчет по тратам
-`/all <time_token>` - траты за последнее время=`<time_token>` по кaтегориям
+`/all <time_token>` - траты за последнее время=`<time_token>` по кaтегориям или альтернативный вариант (см Примеры)
   #### Примеры
   * `/all day` - за последний день
   * `/all year` - за последний год
   * `/all 1m30s` - за последние полторы минуты
+  * `/all 2022-01-01 2022-12-31` - от конкретной даты - до конкретной даты
 
 ---
 ### Выбор валют

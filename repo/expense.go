@@ -38,6 +38,7 @@ func (r *CreateExpenseResp) String() string {
 type ListUserExpenseReq struct {
 	UserID   int64
 	FromTime time.Time
+	ToTime   time.Time
 }
 
 type ListUserExpenseResp []struct {

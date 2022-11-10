@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -11,6 +12,7 @@ type Config struct {
 	Exchange ConfigExchange `mapstructure:",squash"`
 	DB       ConfigDB       `mapstructure:",squash"`
 	Tracing  ConfigTracing  `mapstructure:",squash"`
+	Cache    ConfigCache    `mapstructure:",squash"`
 	HTTP     ConfigHTTP     `mapstructure:",squash"`
 	GRPC     ConfigGRPC     `mapstructure:",squash"`
 	Kafka    ConfigKafka    `mapstructure:",squash"`
@@ -34,6 +36,20 @@ type ConfigDB struct {
 	TestUserID int64  `mapstructure:"DB_TEST_USER_ID"`
 }
 
+type ConfigCache struct {
+	Redis             ConfigRedis   `mapstructure:",squash"`
+	LocalTTL          time.Duration `mapstructure:"CACHE_LOCAL_TTL"`
+	LocalObjectsCount int           `mapstructure:"CACHE_LOCAL_OBJECTS_COUNT"`
+	RedisTTL          time.Duration `mapstructure:"CACHE_REDIS_TTL"`
+}
+
+type ConfigRedis struct {
+	SocketAddr string `mapstructure:"REDIS_SOCKET_ADDRESS"`
+	Password   string `mapstructure:"REDIS_PASSWORD"`
+	DB         int    `mapstructure:"REDIS_DB"`
+}
+
+//nolint:nakedret
 type ConfigHTTP struct {
 	Address     string `mapstructure:"HTTP_SERVER_ADDRESS"`
 	MetricsPort int    `mapstructure:"HTTP_METRICS_PORT"`
@@ -55,6 +71,12 @@ func NewConfig() (cfg *Config, err error) {
 
 	viper.SetDefault("DB_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	viper.SetDefault("DB_TEST_USER_ID", 0)
+
+	viper.SetDefault("CACHE_LOCAL_OBJECTS_COUNT", 10000)
+	viper.SetDefault("CACHE_LOCAL_TTL", time.Minute)
+	viper.SetDefault("CACHE_REDIS_TTL", time.Hour)
+	viper.SetDefault("REDIS_SOCKET_ADDRESS", "localhost:6379")
+	viper.SetDefault("REDIS_DB", 0)
 
 	viper.SetDefault("TRACING_URL", "http://localhost:14268/api/traces")
 

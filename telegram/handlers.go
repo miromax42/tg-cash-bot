@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/telegram/tools"
 )
 
@@ -70,12 +72,34 @@ func (s *Server) CreateExpense(c tele.Context) error {
 type ListUserExpenseReq struct {
 	UserID   int64
 	FromTime time.Time
+	ToTime   *time.Time
 }
 
 func (s *Server) ListExpenses(c tele.Context) error {
 	req, err := NewListUserExpenseReq(c)
 	if err != nil {
 		return s.SendError(err, c, tools.ErrInvalidListExpense)
+	}
+
+	databaseReq := req.ToDB()
+
+	var resp repo.ListUserExpenseResp
+	err = s.dbCache.Get(requestContext(c), cache.UserReportToken(databaseReq), &resp)
+	if err != nil {
+		if errors.Is(err, cache.ErrMiss) {
+			resp, err = s.expense.ListUserExpense(requestContext(c), databaseReq)
+			if err != nil {
+				return s.SendError(err, c, tools.ErrInternal)
+			}
+
+			if err = s.dbCache.Set(requestContext(c), cache.UserReportToken(databaseReq), resp); err != nil {
+				return s.SendError(err, c, tools.ErrInternal)
+			}
+		} else {
+			_ = s.SendError(err, c, tools.ErrInternal)
+
+			return errors.Wrapf(err, "cache")
+		}
 	}
 
 	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{

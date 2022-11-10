@@ -33,6 +33,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fakeexchange"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache/redis"
 	_ "gitlab.ozon.dev/miromaxxs/telegram-bot/doc/statik"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/gapi"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
@@ -56,6 +57,7 @@ func main() { //nolint:funlen
 	var (
 		bot          *tele.Bot
 		db           *ent.Client
+		cache    *redis.Cache
 		exchange     currency.Exchange
 		srv          *telegram.Server
 		tp           *tracesdk.TracerProvider
@@ -104,6 +106,12 @@ func main() { //nolint:funlen
 		exchange = fakeexchange.Exchange{}
 
 		return errors.Wrap(err, "exchange")
+	})
+
+	init.Go(func() (err error) {
+		cache, err = redis.NewCache(initCtx, cfg.Cache)
+
+		return errors.Wrap(err, "cache")
 	})
 
 	init.Go(func() (err error) {

@@ -63,7 +63,3 @@ func (db *TestDatabase) Close() {
 
 	db.instance.Terminate(ctx)
 }
-
-func ConnectionStringFromCI() (url string, ok bool) {
-	return "", false
-}
