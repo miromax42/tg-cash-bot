@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -42,7 +41,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInvalidCreateExpense)
 	}
 
-	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
+	amount, err := s.exchange.Convert(RequestContext(c), currency.ConvertReq{
 		Amount: req.Amount,
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
@@ -57,7 +56,7 @@ func (s *Server) CreateExpense(c tele.Context) error {
 		Category: req.Category,
 	}
 
-	resp, err := s.expense.CreateExpense(requestContext(c), databaseReq)
+	resp, err := s.expense.CreateExpense(RequestContext(c), databaseReq)
 	if err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
 			return s.SendError(err, c, tools.ErrLimitBlockExpense)
@@ -84,15 +83,15 @@ func (s *Server) ListExpenses(c tele.Context) error {
 	databaseReq := req.ToDB()
 
 	var resp repo.ListUserExpenseResp
-	err = s.dbCache.Get(requestContext(c), cache.UserReportToken(databaseReq), &resp)
+	err = s.dbCache.Get(RequestContext(c), cache.UserReportToken(databaseReq), &resp)
 	if err != nil {
 		if errors.Is(err, cache.ErrMiss) {
-			resp, err = s.expense.ListUserExpense(requestContext(c), databaseReq)
+			resp, err = s.expense.ListUserExpense(RequestContext(c), databaseReq)
 			if err != nil {
 				return s.SendError(err, c, tools.ErrInternal)
 			}
 
-			if err = s.dbCache.Set(requestContext(c), cache.UserReportToken(databaseReq), resp); err != nil {
+			if err = s.dbCache.Set(RequestContext(c), cache.UserReportToken(databaseReq), resp); err != nil {
 				return s.SendError(err, c, tools.ErrInternal)
 			}
 		} else {
@@ -102,7 +101,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		}
 	}
 
-	multiplier, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
+	multiplier, err := s.exchange.Convert(RequestContext(c), currency.ConvertReq{
 		Amount: oneCoin,
 		From:   s.exchange.Base(),
 		To:     c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
@@ -111,7 +110,7 @@ func (s *Server) ListExpenses(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	if err := s.reportSender.ReportSend(requestContext(c), &pb.ReportRequest{
+	if err := s.reportSender.ReportSend(RequestContext(c), &pb.ReportRequest{
 		UserId:     c.Sender().ID,
 		StartTime:  timestamppb.New(req.FromTime),
 		EndTime:    timestamppb.Now(),
@@ -139,7 +138,7 @@ func (s *Server) SetCurrency(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
-	if err := s.userSettings.Set(requestContext(c), req); err != nil {
+	if err := s.userSettings.Set(RequestContext(c), req); err != nil {
 		return s.SendError(err, c, tools.ErrInternal)
 	}
 
@@ -156,7 +155,7 @@ func (s *Server) SetLimit(c tele.Context) error {
 		return s.SendError(err, c, tools.ErrInvalidSetLimit)
 	}
 
-	amount, err := s.exchange.Convert(requestContext(c), currency.ConvertReq{
+	amount, err := s.exchange.Convert(RequestContext(c), currency.ConvertReq{
 		Amount: req.Limit,
 		From:   c.Get(SettingsKey.String()).(*repo.PersonalSettingsResp).Currency,
 		To:     s.exchange.Base(),
@@ -170,7 +169,7 @@ func (s *Server) SetLimit(c tele.Context) error {
 		Limit:  &amount,
 	}
 
-	if err = s.userSettings.Set(requestContext(c), repoReq); err != nil {
+	if err = s.userSettings.Set(RequestContext(c), repoReq); err != nil {
 		if errors.Is(err, repo.ErrLimitExceed) {
 			return s.SendError(err, c, tools.ErrSetLimitBlockedByExpenses)
 		}

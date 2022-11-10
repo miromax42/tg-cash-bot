@@ -17,6 +17,6 @@ func (k ContextKey) String() string {
 	return string(k)
 }
 
-func requestContext(c tele.Context) context.Context {
+func RequestContext(c tele.Context) context.Context {
 	return c.Get(RequestContextKey.String()).(context.Context) //nolint:forcetypeassert
 }

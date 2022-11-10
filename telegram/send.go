@@ -17,7 +17,7 @@ func (s *Server) SendError(err error, c tele.Context, e tools.UserError) error {
 		err = errors.CombineErrors(err, errors.WithHint(terr, "during handling main error"))
 	} else if !e.IsNotExpected {
 		metrics.WrongUsageCounter.Inc()
-		s.logger.Warn(requestContext(c), e.Title)
+		s.logger.Warn(RequestContext(c), e.Title)
 
 		return nil
 	}
@@ -26,7 +26,7 @@ func (s *Server) SendError(err error, c tele.Context, e tools.UserError) error {
 }
 
 func (s *Server) Send(c tele.Context, what interface{}, opts ...interface{}) error {
-	_, span := otel.Tracer(util.RequestTrace).Start(requestContext(c), "Telegram.Send")
+	_, span := otel.Tracer(util.RequestTrace).Start(RequestContext(c), "Telegram.Send")
 	defer span.End()
 
 	return c.Send(what, opts...)

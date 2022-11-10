@@ -7,6 +7,8 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/metrics"
 
@@ -34,13 +36,10 @@ func NewServer(
 	exchange currency.Exchange,
 	reportSender sender.ReportSender,
 ) (*Server, error) {
-	bot.OnError = func(err error, c tele.Context) {
-		log.Error(requestContext(c), fmt.Sprintf("%+v", err))
-	}
-
 	srv := &Server{
 		logger:       log,
 		bot:          bot,
+		dbCache:      dbCache,
 		expense:      expense,
 		userSettings: userSettings,
 		exchange:     exchange,

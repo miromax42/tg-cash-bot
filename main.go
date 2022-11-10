@@ -33,10 +33,10 @@ import (
 	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fakeexchange"
-	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache/redis"
 	_ "gitlab.ozon.dev/miromaxxs/telegram-bot/doc/statik"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/gapi"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache/redis"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
 	kafkasender "gitlab.ozon.dev/miromaxxs/telegram-bot/sender/kafka"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
@@ -57,7 +57,7 @@ func main() { //nolint:funlen
 	var (
 		bot          *tele.Bot
 		db           *ent.Client
-		cache    *redis.Cache
+		cache        *redis.Cache
 		exchange     currency.Exchange
 		srv          *telegram.Server
 		tp           *tracesdk.TracerProvider
@@ -115,7 +115,7 @@ func main() { //nolint:funlen
 	})
 
 	init.Go(func() (err error) {
-		bot, err = createTelegramConnection(cfg.Telegram)
+		bot, err = createTelegramConnection(cfg.Telegram, log)
 
 		return errors.Wrap(err, "telegram")
 	})
@@ -149,7 +149,7 @@ func main() { //nolint:funlen
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
 
-		srv, err = telegram.NewServer(workCtx, log, bot, expense, personalSettings, exchange, reportSender)
+		srv, err = telegram.NewServer(workCtx, log, bot, expense, personalSettings, cache, exchange, reportSender)
 		if err != nil {
 			return err
 		}
@@ -196,10 +196,13 @@ func main() { //nolint:funlen
 	}
 }
 
-func createTelegramConnection(cfg util.ConfigTelegram) (*tele.Bot, error) {
+func createTelegramConnection(cfg util.ConfigTelegram, log logger.Logger) (*tele.Bot, error) {
 	pref := tele.Settings{
 		Token:  cfg.Token,
 		Poller: &tele.LongPoller{Timeout: time.Second},
+		OnError: func(err error, c tele.Context) {
+			log.Error(telegram.RequestContext(c), fmt.Sprintf("%+v", err))
+		},
 	}
 
 	return tele.NewBot(pref)
