@@ -25,6 +25,7 @@ const (
 	groupReportRequest = "reportGroup1"
 )
 
+//nolint:funlen
 func main() {
 	ctx := context.Background()
 

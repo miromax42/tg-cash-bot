@@ -12,6 +12,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-testfixtures/testfixtures/v3 v3.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.13.0
 	github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8
 	github.com/lib/pq v1.10.7

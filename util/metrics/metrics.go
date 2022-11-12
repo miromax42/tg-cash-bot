@@ -50,4 +50,14 @@ var (
 		Namespace: apiName,
 		Name:      "cache_hit_counter",
 	})
+
+	KafkaWriteDuration = promauto.NewSummary(prometheus.SummaryOpts{
+		Namespace: apiName,
+		Name:      "kafka_duration_seconds",
+	})
+
+	KafkaWriteCount = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: apiName,
+		Name:      "kafka_write_count",
+	})
 )

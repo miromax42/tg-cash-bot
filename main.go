@@ -15,8 +15,9 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/logtags"
 	"github.com/go-testfixtures/testfixtures/v3"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcvalidator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	grpcprometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	gruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -61,6 +62,8 @@ func main() { //nolint:funlen
 		srv          *telegram.Server
 		tp           *tracesdk.TracerProvider
 		reportSender sender.ReportSender
+
+		grpcServerStream = make(chan *grpc.Server)
 	)
 
 	ctx := logtags.AddTag(context.Background(), "golang.version", runtime.Version())
@@ -160,7 +163,9 @@ func main() { //nolint:funlen
 	})
 
 	work.Go(func() error {
-		return runGRPCServer(workCtx, cfg.GRPC, log, bot)
+		defer close(grpcServerStream)
+
+		return runGRPCServer(workCtx, cfg.GRPC, log, bot, grpcServerStream)
 	})
 
 	work.Go(func() error {
@@ -168,7 +173,9 @@ func main() { //nolint:funlen
 	})
 
 	work.Go(func() error {
-		return runMetricsServer(workCtx, cfg.HTTP, log)
+		grpcServer := <-grpcServerStream
+
+		return runMetricsServer(workCtx, cfg.HTTP, log, grpcServer)
 	})
 
 	work.Go(func() error {
@@ -269,20 +276,28 @@ func openDB(dsn string) (*sql.Driver, error) {
 	return sql.Open(driverName, dsn)
 }
 
-func runGRPCServer(ctx context.Context, cfg util.ConfigGRPC, log logger.Logger, bot *tele.Bot) error {
+func runGRPCServer(ctx context.Context,
+	cfg util.ConfigGRPC,
+	log logger.Logger,
+	bot *tele.Bot,
+	grpcServerStream chan<- *grpc.Server) error {
 	server, err := gapi.New(bot, log)
 	if err != nil {
 		return errors.Wrap(err, "create server")
 	}
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(
-			grpc_middleware.ChainUnaryServer(grpc_validator.UnaryServerInterceptor()),
-		),
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
+			grpcvalidator.UnaryServerInterceptor(),
+			grpcprometheus.UnaryServerInterceptor,
+		)),
+		grpc.StreamInterceptor(grpcprometheus.StreamServerInterceptor),
 	)
 
 	pb.RegisterBotSendServer(grpcServer, server)
 	reflection.Register(grpcServer) // explore server
+
+	grpcServerStream <- grpcServer
 
 	listener, err := net.Listen("tcp", cfg.Address)
 	if err != nil {
@@ -354,8 +369,18 @@ func runGatewayServer(ctx context.Context, cfg util.ConfigHTTP, log logger.Logge
 	return nil
 }
 
-func runMetricsServer(ctx context.Context, cfg util.ConfigHTTP, log logger.Logger) error {
+func runMetricsServer(
+	ctx context.Context,
+	cfg util.ConfigHTTP,
+	log logger.Logger,
+	grpcServer *grpc.Server,
+) error {
 	const metricsEndpoint = "/metrics"
+
+	if grpcServer == nil {
+		return errors.New("grpcServer is nil")
+	}
+	grpcprometheus.Register(grpcServer)
 
 	metrics := &http.Server{Addr: fmt.Sprintf(":%d", cfg.MetricsPort)} //nolint:gosec
 	http.Handle(metricsEndpoint, promhttp.Handler())
