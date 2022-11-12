@@ -29,7 +29,7 @@ tasks:
 
   run: go run ./main.go
 
-  run-render: go run ./cmd/message-render/main.go
+  run-render: go run ./cmd/message-render/main.go &
 
   lint: golangci-lint run ./...
 
@@ -88,6 +88,6 @@ tasks:
       - docker compose up -d
 
   start-new:
-    deps: [docker,gen]
+    deps: [docker,gen,run-render]
     cmds:
-      - cmd: run
+      - task: run

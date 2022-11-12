@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cockroachdb/logtags"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/proto"
@@ -37,6 +38,8 @@ func main() {
 	}
 
 	// init db
+	log.Printf(ctx, "connecting to BD:%q", cfg.DB.URL)
+
 	dbClient, err := ent.Open("postgres", cfg.DB.URL)
 	if err != nil {
 		log.Panic(ctx, err)
@@ -45,6 +48,8 @@ func main() {
 	expenses := database.NewExpense(dbClient)
 
 	// init grpc
+	log.Printf(ctx, "connecting to GRPC-server:%q", cfg.GRPC.Address)
+
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Panic(ctx, err)
@@ -54,6 +59,8 @@ func main() {
 	client := pb.NewBotSendClient(conn)
 
 	// kafka
+	log.Printf(ctx, "connecting to Kafka:%q", cfg.Kafka.Address)
+
 	reader := kafka.NewReader(topicReportRequest, groupReportRequest, cfg.Kafka)
 	for msg := range reader.Read(ctx) {
 		if msg.Err != nil {
@@ -87,10 +94,12 @@ func main() {
 		if err != nil {
 			log.Error(ctx, err)
 		}
+
+		mCtx := logtags.AddTag(ctx, "service", "renderer")
 		if rsp.Success {
-			log.Info(ctx, "success")
+			log.Info(mCtx, "success")
 		} else {
-			log.Warn(ctx, "no success")
+			log.Warn(mCtx, "no success")
 		}
 	}
 }
