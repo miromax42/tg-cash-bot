@@ -27,7 +27,9 @@ tasks:
 
   test: go test --coverprofile=coverage.out ./... -short
 
-  run: go run ./...
+  run: go run ./main.go
+
+  run-render: go run ./cmd/message-render/main.go
 
   lint: golangci-lint run ./...
 
