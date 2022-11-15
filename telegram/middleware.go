@@ -19,7 +19,7 @@ import (
 func (s *Server) Authentication(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		var (
-			ctx       = requestContext(c)
+			ctx       = RequestContext(c)
 			userID    = c.Sender().ID
 			userToken = cache.UserSettingsToken(userID)
 
@@ -81,7 +81,7 @@ func (s *Server) WithContext(ctx context.Context) func(next tele.HandlerFunc) te
 
 func (s *Server) Logger(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		s.logger.Info(requestContext(c), "request msg")
+		s.logger.Info(RequestContext(c), "request msg")
 
 		return next(c)
 	}
@@ -91,7 +91,7 @@ func (s *Server) Logger(next tele.HandlerFunc) tele.HandlerFunc {
 func (s *Server) DropUserSettingsCache(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		var (
-			ctx       = requestContext(c)
+			ctx       = RequestContext(c)
 			userToken = cache.UserSettingsToken(c.Sender().ID)
 		)
 

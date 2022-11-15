@@ -13,6 +13,9 @@ type Config struct {
 	DB       ConfigDB       `mapstructure:",squash"`
 	Tracing  ConfigTracing  `mapstructure:",squash"`
 	Cache    ConfigCache    `mapstructure:",squash"`
+	HTTP     ConfigHTTP     `mapstructure:",squash"`
+	GRPC     ConfigGRPC     `mapstructure:",squash"`
+	Kafka    ConfigKafka    `mapstructure:",squash"`
 }
 
 type ConfigTelegram struct {
@@ -47,6 +50,19 @@ type ConfigRedis struct {
 }
 
 //nolint:nakedret
+type ConfigHTTP struct {
+	Address     string `mapstructure:"HTTP_SERVER_ADDRESS"`
+	MetricsPort int    `mapstructure:"HTTP_METRICS_PORT"`
+}
+
+type ConfigGRPC struct {
+	Address string `mapstructure:"GRPC_SERVER_ADDRESS"`
+}
+
+type ConfigKafka struct {
+	Address string `mapstructure:"KAFKA_ADDRESS"`
+}
+
 func NewConfig() (cfg *Config, err error) {
 	viper.SetDefault("TLG_TOKEN", "")
 
@@ -64,6 +80,12 @@ func NewConfig() (cfg *Config, err error) {
 
 	viper.SetDefault("TRACING_URL", "http://localhost:14268/api/traces")
 
+	viper.SetDefault("HTTP_SERVER_ADDRESS", "0.0.0.0:8080")
+	viper.SetDefault("HTTP_METRICS_PORT", 2112)
+	viper.SetDefault("GRPC_SERVER_ADDRESS", "0.0.0.0:50051")
+
+	viper.SetDefault("KAFKA_ADDRESS", "localhost:9092")
+
 	viper.AutomaticEnv()
 
 	cfg = &Config{}
@@ -71,5 +93,5 @@ func NewConfig() (cfg *Config, err error) {
 		return nil, fmt.Errorf("config unmarchal: %w", err)
 	}
 
-	return
+	return cfg, nil
 }

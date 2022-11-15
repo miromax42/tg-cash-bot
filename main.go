@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"net/http"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -12,17 +15,30 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/logtags"
 	"github.com/go-testfixtures/testfixtures/v3"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcvalidator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	grpcprometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	gruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rakyll/statik/fs"
 	"go.nhat.io/otelsql"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
+	tele "gopkg.in/telebot.v3"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency/fakeexchange"
+	_ "gitlab.ozon.dev/miromaxxs/telegram-bot/doc/statik"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/gapi"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/pb"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/repo/cache/redis"
+	"gitlab.ozon.dev/miromaxxs/telegram-bot/sender"
+	kafkasender "gitlab.ozon.dev/miromaxxs/telegram-bot/sender/kafka"
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/util/logger"
 
 	"gitlab.ozon.dev/miromaxxs/telegram-bot/currency"
@@ -39,12 +55,15 @@ import (
 
 func main() { //nolint:funlen
 	var (
-		db       *ent.Client
-		cache    *redis.Cache
-		exchange currency.Exchange
-		srv      *telegram.Server
-		tp       *tracesdk.TracerProvider
-		metricts *http.Server
+		bot          *tele.Bot
+		db           *ent.Client
+		cache        *redis.Cache
+		exchange     currency.Exchange
+		srv          *telegram.Server
+		tp           *tracesdk.TracerProvider
+		reportSender sender.ReportSender
+
+		grpcServerStream = make(chan *grpc.Server)
 	)
 
 	ctx := logtags.AddTag(context.Background(), "golang.version", runtime.Version())
@@ -97,6 +116,18 @@ func main() { //nolint:funlen
 		return errors.Wrap(err, "cache")
 	})
 
+	init.Go(func() (err error) {
+		bot, err = createTelegramConnection(cfg.Telegram, log)
+
+		return errors.Wrap(err, "telegram")
+	})
+
+	init.Go(func() (err error) {
+		reportSender = kafkasender.NewWriter(cfg.Kafka)
+
+		return nil
+	})
+
 	if err = init.Wait(); err != nil {
 		log.Panicf(initCtx, errors.Wrap(err, "init").Error())
 	}
@@ -120,7 +151,7 @@ func main() { //nolint:funlen
 		expense := database.NewExpense(db)
 		personalSettings := database.NewPersonalSettings(db)
 
-		srv, err = telegram.NewServer(workCtx, cfg.Telegram, log, expense, personalSettings, cache, exchange)
+		srv, err = telegram.NewServer(workCtx, log, bot, expense, personalSettings, cache, exchange, reportSender)
 		if err != nil {
 			return err
 		}
@@ -132,14 +163,19 @@ func main() { //nolint:funlen
 	})
 
 	work.Go(func() error {
-		metricts = &http.Server{Addr: ":2112"} //nolint:gosec
-		http.Handle("/metrics", promhttp.Handler())
+		defer close(grpcServerStream)
 
-		if !errors.Is(metricts.ListenAndServe(), http.ErrServerClosed) {
-			return err
-		}
+		return runGRPCServer(workCtx, cfg.GRPC, log, bot, grpcServerStream)
+	})
 
-		return nil
+	work.Go(func() error {
+		return runGatewayServer(workCtx, cfg.HTTP, log, bot)
+	})
+
+	work.Go(func() error {
+		grpcServer := <-grpcServerStream
+
+		return runMetricsServer(workCtx, cfg.HTTP, log, grpcServer)
 	})
 
 	work.Go(func() error {
@@ -159,20 +195,23 @@ func main() { //nolint:funlen
 		return tp.Shutdown(tpCtx)
 	})
 
-	work.Go(func() error {
-		<-workCtx.Done()
-
-		sCtx, cancel := context.WithTimeout(ctx, time.Second*5)
-		defer cancel()
-
-		return metricts.Shutdown(sCtx)
-	})
-
 	if err := work.Wait(); err != nil {
 		log.Panicf(workCtx, "gracefull stop: %s \n", err)
 	} else {
 		log.Info(workCtx, "gracefully stopped!")
 	}
+}
+
+func createTelegramConnection(cfg util.ConfigTelegram, log logger.Logger) (*tele.Bot, error) {
+	pref := tele.Settings{
+		Token:  cfg.Token,
+		Poller: &tele.LongPoller{Timeout: time.Second},
+		OnError: func(err error, c tele.Context) {
+			log.Error(telegram.RequestContext(c), fmt.Sprintf("%+v", err))
+		},
+	}
+
+	return tele.NewBot(pref)
 }
 
 func migrateDB(ctx context.Context, driver *sql.Driver) (*ent.Client, error) {
@@ -235,4 +274,126 @@ func openDB(dsn string) (*sql.Driver, error) {
 	}
 
 	return sql.Open(driverName, dsn)
+}
+
+func runGRPCServer(ctx context.Context,
+	cfg util.ConfigGRPC,
+	log logger.Logger,
+	bot *tele.Bot,
+	grpcServerStream chan<- *grpc.Server) error {
+	server, err := gapi.New(bot, log)
+	if err != nil {
+		return errors.Wrap(err, "create server")
+	}
+
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
+			grpcvalidator.UnaryServerInterceptor(),
+			grpcprometheus.UnaryServerInterceptor,
+		)),
+		grpc.StreamInterceptor(grpcprometheus.StreamServerInterceptor),
+	)
+
+	pb.RegisterBotSendServer(grpcServer, server)
+	reflection.Register(grpcServer) // explore server
+
+	grpcServerStream <- grpcServer
+
+	listener, err := net.Listen("tcp", cfg.Address)
+	if err != nil {
+		return errors.Wrap(err, "cannot create listener: %s")
+	}
+
+	go func() {
+		<-ctx.Done()
+		grpcServer.Stop()
+	}()
+
+	log.Printf(ctx, "stating GRPC server on %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		return errors.Wrap(err, "cannot start GRPC server: %s")
+	}
+
+	return nil
+}
+
+func runGatewayServer(ctx context.Context, cfg util.ConfigHTTP, log logger.Logger, bot *tele.Bot) error {
+	server, err := gapi.New(bot, log)
+	if err != nil {
+		return errors.Wrap(err, "cannot create server")
+	}
+
+	grpcMux := gruntime.NewServeMux(
+		gruntime.WithMarshalerOption(gruntime.MIMEWildcard, &gruntime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	)
+
+	err = pb.RegisterBotSendHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		return errors.Wrap(err, "cannot register server handler")
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/", grpcMux)
+
+	statikFS, err := fs.New()
+	if err != nil {
+		return errors.Wrap(err, "cannot create statik fs")
+	}
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+	mux.Handle("/swagger/", swaggerHandler)
+
+	listener, err := net.Listen("tcp", cfg.Address)
+	if err != nil {
+		return errors.Wrap(err, "cannot create listener")
+	}
+
+	go func() {
+		<-ctx.Done()
+		listener.Close()
+	}()
+
+	log.Printf(ctx, "stating HTTP gateway server on %s", listener.Addr().String())
+	err = http.Serve(listener, mux) //nolint:gosec
+	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
+		return errors.Wrap(err, "cannot start http-gateway server")
+	}
+
+	return nil
+}
+
+func runMetricsServer(
+	ctx context.Context,
+	cfg util.ConfigHTTP,
+	log logger.Logger,
+	grpcServer *grpc.Server,
+) error {
+	const metricsEndpoint = "/metrics"
+
+	if grpcServer == nil {
+		return errors.New("grpcServer is nil")
+	}
+	grpcprometheus.Register(grpcServer)
+
+	metrics := &http.Server{Addr: fmt.Sprintf(":%d", cfg.MetricsPort)} //nolint:gosec
+	http.Handle(metricsEndpoint, promhttp.Handler())
+
+	go func() {
+		<-ctx.Done()
+		metrics.Close()
+	}()
+
+	log.Printf(ctx, "stating HTTP Metrics server on [::]:%d%s", cfg.MetricsPort, metricsEndpoint)
+	if err := metrics.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
 }
